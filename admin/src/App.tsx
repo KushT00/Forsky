@@ -6,7 +6,7 @@ import { Products } from './components/component/products';
 import { Categories } from './components/component/categories';
 import { Payments } from './components/component/payment';
 import { Shipping } from './components/component/shipping';
-import { Reports } from './components/component/reports';
+import { Filter2 } from './components/component/filter2';
  // Assume you have a Home component
 // kush
 function App() {
@@ -21,7 +21,7 @@ function App() {
         <Route path="/categories" element={<Categories />} />
         <Route path="/payments" element={<Payments />} />
         <Route path="/shipping" element={<Shipping />} />
-        <Route path="/reports" element={<Reports />} />
+        <Route path="/filter" element={<Filter2 />} />
         
       </Routes>
     </Router>

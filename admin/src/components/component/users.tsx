@@ -127,19 +127,7 @@ export function Users() {
               </TooltipTrigger>
               <TooltipContent side="right">Shipping</TooltipContent>
             </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/reports"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <BarChartIcon className="h-5 w-5" />
-                  <span className="sr-only">Reports</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Reports</TooltipContent>
-            </Tooltip>
+             
           </TooltipProvider>
         </nav>
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
@@ -558,6 +546,7 @@ export function Users() {
   )
 }
 
+ 
 function BarChartIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -578,7 +567,6 @@ function BarChartIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) 
     </svg>
   )
 }
-
 
 function CreditCardIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
   return (
