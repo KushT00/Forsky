@@ -6,10 +6,15 @@ import { Button } from "@/components/ui/button"
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from "@/components/ui/breadcrumb"
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from "@/components/ui/dropdown-menu"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { SVGProps } from "react"
 import { JSX } from "react/jsx-runtime"
-export function Dashboard() {
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "../ui/pagination"
+// import { Tabs } from "@radix-ui/react-tabs"
+// import { Table, Badge } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import {Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "../ui/table"
+export function Payments() {
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
@@ -27,7 +32,7 @@ export function Dashboard() {
               <TooltipTrigger asChild>
                 <Link
                   href="/dashboard"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg  text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                   prefetch={false}
                 >
                   <LayoutGridIcon className="h-5 w-5" />
@@ -93,7 +98,7 @@ export function Dashboard() {
               <TooltipTrigger asChild>
                 <Link
                   href="/payments"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                   prefetch={false}
                 >
                   <CreditCardIcon className="h-5 w-5" />
@@ -102,7 +107,7 @@ export function Dashboard() {
               </TooltipTrigger>
               <TooltipContent side="right">Payments</TooltipContent>
             </Tooltip>
-             
+            
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -213,7 +218,7 @@ export function Dashboard() {
                   <CreditCardIcon className="h-5 w-5" />
                   Payments
                 </Link>
-                 
+                
                 <Link
                   href="/shipping"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
@@ -280,37 +285,107 @@ export function Dashboard() {
           </DropdownMenu>
         </header>
         <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-          <div className="grid auto-rows-max items-start gap-4 md:gap-8">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle>Total Sales</CardTitle>
-                  <CardDescription>The total revenue generated from all sales.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-4xl font-bold">$250,000</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle>Total Products</CardTitle>
-                  <CardDescription>The total number of products in the inventory.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-4xl font-bold" >380</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle>Total Users</CardTitle>
-                  <CardDescription>Total users registered</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-4xl font-bold">250</div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+          
+          {/* <Card x-chunk="dashboard-06-chunk-0" /> */}
+          <Card className="sm:col-span-2">
+            <CardHeader className="pb-3">
+              <CardTitle>Payments</CardTitle>
+              <CardDescription className="max-w-lg text-balance leading-relaxed">
+                View and manage all payments made by your customers.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Invoice</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Payment Method</TableHead>
+                    <TableHead>Date</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell className="font-medium">INV001</TableCell>
+                    <TableCell>John Doe</TableCell>
+                    <TableCell>$250.00</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">Paid</Badge>
+                    </TableCell>
+                    <TableCell>Credit Card</TableCell>
+                    <TableCell>2023-04-15</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">INV002</TableCell>
+                    <TableCell>Jane Smith</TableCell>
+                    <TableCell>$150.00</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">Pending</Badge>
+                    </TableCell>
+                    <TableCell>PayPal</TableCell>
+                    <TableCell>2023-05-01</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">INV003</TableCell>
+                    <TableCell>Michael Johnson</TableCell>
+                    <TableCell>$350.00</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">Unpaid</Badge>
+                    </TableCell>
+                    <TableCell>Bank Transfer</TableCell>
+                    <TableCell>2023-06-10</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">INV004</TableCell>
+                    <TableCell>Emily Davis</TableCell>
+                    <TableCell>$450.00</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">Paid</Badge>
+                    </TableCell>
+                    <TableCell>Credit Card</TableCell>
+                    <TableCell>2023-07-01</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">INV005</TableCell>
+                    <TableCell>David Wilson</TableCell>
+                    <TableCell>$550.00</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">Paid</Badge>
+                    </TableCell>
+                    <TableCell>PayPal</TableCell>
+                    <TableCell>2023-08-01</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </CardContent>
+            <CardFooter className="flex ">
+              
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious href="#" />
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationLink href="#">1</PaginationLink>
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationLink href="#">2</PaginationLink>
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationLink href="#">3</PaginationLink>
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationNext href="#" />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </CardFooter>
+          </Card>
         </main>
       </div>
     </div>

@@ -9,7 +9,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLab
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { SVGProps } from "react"
 import { JSX } from "react/jsx-runtime"
-export function Dashboard() {
+export function Shipping() {
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
@@ -27,7 +27,7 @@ export function Dashboard() {
               <TooltipTrigger asChild>
                 <Link
                   href="/dashboard"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg  text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                   prefetch={false}
                 >
                   <LayoutGridIcon className="h-5 w-5" />
@@ -107,7 +107,7 @@ export function Dashboard() {
               <TooltipTrigger asChild>
                 <Link
                   href="/shipping"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accents-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                   prefetch={false}
                 >
                   <TruckIcon className="h-5 w-5" />
@@ -539,7 +539,6 @@ function ShoppingCartIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElemen
 }
 
 
- 
 
 
 function TruckIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {

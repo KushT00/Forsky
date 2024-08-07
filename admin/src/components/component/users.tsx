@@ -1,19 +1,30 @@
 
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
 import Link from "next/link"
+// import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from "@/components/ui/breadcrumb"
+// import { Input } from "@/components/ui/input"
+// import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu"
+// import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
+import { SVGProps } from "react"
+import { JSX } from "react/jsx-runtime"
+// import { Tabs, TabsList, TabsTrigger, TabsContent } from "@radix-ui/react-tabs"
+import { ListFilterIcon, FileIcon, CirclePlusIcon, FilePenIcon, TrashIcon } from "lucide-react"
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from "@/components/ui/breadcrumb"
 import { Input } from "@/components/ui/input"
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
-import { SVGProps } from "react"
-import { JSX } from "react/jsx-runtime"
-export function Dashboard() {
+
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table"
+
+
+export function Users() {
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
-        <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
+      <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
           <TooltipProvider>
             <Link
               href=""
@@ -27,7 +38,7 @@ export function Dashboard() {
               <TooltipTrigger asChild>
                 <Link
                   href="/dashboard"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg  text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                   prefetch={false}
                 >
                   <LayoutGridIcon className="h-5 w-5" />
@@ -54,7 +65,7 @@ export function Dashboard() {
               <TooltipTrigger asChild>
                 <Link
                   href="/users"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                   prefetch={false}
                 >
                   <UsersIcon className="h-5 w-5" />
@@ -161,19 +172,19 @@ export function Dashboard() {
             <SheetContent side="left" className="sm:max-w-xs">
               <nav className="grid gap-6 text-lg font-medium">
                 <Link
-                  href=""
+                  href="#"
                   className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
                   prefetch={false}
                 >
                   <Package2Icon className="h-5 w-5 transition-all group-hover:scale-110" />
                   <span className="sr-only">Acme Inc</span>
                 </Link>
-                <Link href="/dashboard" className="flex items-center gap-4 px-2.5 text-foreground" prefetch={false}>
+                <Link href="#" className="flex items-center gap-4 px-2.5 text-foreground" prefetch={false}>
                   <LayoutGridIcon className="h-5 w-5" />
                   Overview
                 </Link>
                 <Link
-                  href="/orders"
+                  href="#"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                   prefetch={false}
                 >
@@ -181,16 +192,23 @@ export function Dashboard() {
                   Orders
                 </Link>
                 <Link
-                  href="/users"
+                  href="#"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                   prefetch={false}
                 >
                   <UsersIcon className="h-5 w-5" />
                   Users
                 </Link>
-                
                 <Link
-                  href="/products"
+                  href="#"
+                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+                  prefetch={false}
+                >
+                  <UsersIcon className="h-5 w-5" />
+                  Customers
+                </Link>
+                <Link
+                  href="#"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                   prefetch={false}
                 >
@@ -198,7 +216,7 @@ export function Dashboard() {
                   Products
                 </Link>
                 <Link
-                  href="/categories"
+                  href="#"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                   prefetch={false}
                 >
@@ -206,16 +224,16 @@ export function Dashboard() {
                   Categories
                 </Link>
                 <Link
-                  href="/payments"
+                  href="#"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                   prefetch={false}
                 >
                   <CreditCardIcon className="h-5 w-5" />
                   Payments
                 </Link>
-                 
+                
                 <Link
-                  href="/shipping"
+                  href="#"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                   prefetch={false}
                 >
@@ -223,7 +241,7 @@ export function Dashboard() {
                   Shipping
                 </Link>
                 <Link
-                  href="/reports"
+                  href="#"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                   prefetch={false}
                 >
@@ -237,7 +255,7 @@ export function Dashboard() {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link href="/dashboard" prefetch={false}>
+                  <Link href="#" prefetch={false}>
                     Dashboard
                   </Link>
                 </BreadcrumbLink>
@@ -280,37 +298,260 @@ export function Dashboard() {
           </DropdownMenu>
         </header>
         <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-          <div className="grid auto-rows-max items-start gap-4 md:gap-8">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle>Total Sales</CardTitle>
-                  <CardDescription>The total revenue generated from all sales.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-4xl font-bold">$250,000</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle>Total Products</CardTitle>
-                  <CardDescription>The total number of products in the inventory.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-4xl font-bold" >380</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle>Total Users</CardTitle>
-                  <CardDescription>Total users registered</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-4xl font-bold">250</div>
-                </CardContent>
-              </Card>
+          <Tabs defaultValue="all">
+            <div className="flex items-center">
+              <TabsList>
+                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="colleague">colleague</TabsTrigger>
+                <TabsTrigger value="Customers">Customers</TabsTrigger>
+                
+              </TabsList>
+              <div className="ml-auto flex items-center gap-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-8 gap-1">
+                      <ListFilterIcon className="h-3.5 w-3.5" />
+                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">Filter</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Filter by</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuCheckboxItem checked>Active</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem>Draft</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem>Archived</DropdownMenuCheckboxItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Button size="sm" variant="outline" className="h-8 gap-1">
+                  <FileIcon className="h-3.5 w-3.5" />
+                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">Export</span>
+                </Button>
+                <Button size="sm" className="h-8 gap-1">
+                  <CirclePlusIcon className="h-3.5 w-3.5" />
+                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">Add User</span>
+                </Button>
+              </div>
             </div>
-          </div>
+            <TabsContent value="all">
+              <Card x-chunk="dashboard-06-chunk-0">
+                <CardHeader>
+                  <CardTitle>Users</CardTitle>
+                  <CardDescription>Manage your users and view their information.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="hidden sm:table-cell">ID</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead className="hidden sm:table-cell">Role</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell className="hidden sm:table-cell">1</TableCell>
+                        <TableCell className="font-medium">John Doe</TableCell>
+                        <TableCell className="hidden sm:table-cell">Admin</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Button size="icon" variant="ghost">
+                              <FilePenIcon className="h-4 w-4" />
+                              <span className="sr-only">Edit</span>
+                            </Button>
+                            <Button size="icon" variant="ghost">
+                              <TrashIcon className="h-4 w-4" />
+                              <span className="sr-only">Delete</span>
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="hidden sm:table-cell">2</TableCell>
+                        <TableCell className="font-medium">Jane Smith</TableCell>
+                        <TableCell className="hidden sm:table-cell">User</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Button size="icon" variant="ghost">
+                              <FilePenIcon className="h-4 w-4" />
+                              <span className="sr-only">Edit</span>
+                            </Button>
+                            <Button size="icon" variant="ghost">
+                              <TrashIcon className="h-4 w-4" />
+                              <span className="sr-only">Delete</span>
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="hidden sm:table-cell">3</TableCell>
+                        <TableCell className="font-medium">Bob Johnson</TableCell>
+                        <TableCell className="hidden sm:table-cell">User</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Button size="icon" variant="ghost">
+                              <FilePenIcon className="h-4 w-4" />
+                              <span className="sr-only">Edit</span>
+                            </Button>
+                            <Button size="icon" variant="ghost">
+                              <TrashIcon className="h-4 w-4" />
+                              <span className="sr-only">Delete</span>
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            <TabsContent value="colleague">
+              <Card x-chunk="dashboard-06-chunk-0">
+                <CardHeader>
+                  <CardTitle>colleague</CardTitle>
+                  <CardDescription>Manage your users and view their information.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="hidden sm:table-cell">ID</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead className="hidden sm:table-cell">Role</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell className="hidden sm:table-cell">1</TableCell>
+                        <TableCell className="font-medium">John Doe</TableCell>
+                        <TableCell className="hidden sm:table-cell">Admin</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Button size="icon" variant="ghost">
+                              <FilePenIcon className="h-4 w-4" />
+                              <span className="sr-only">Edit</span>
+                            </Button>
+                            <Button size="icon" variant="ghost">
+                              <TrashIcon className="h-4 w-4" />
+                              <span className="sr-only">Delete</span>
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="hidden sm:table-cell">2</TableCell>
+                        <TableCell className="font-medium">Jane Smith</TableCell>
+                        <TableCell className="hidden sm:table-cell">User</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Button size="icon" variant="ghost">
+                              <FilePenIcon className="h-4 w-4" />
+                              <span className="sr-only">Edit</span>
+                            </Button>
+                            <Button size="icon" variant="ghost">
+                              <TrashIcon className="h-4 w-4" />
+                              <span className="sr-only">Delete</span>
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="hidden sm:table-cell">3</TableCell>
+                        <TableCell className="font-medium">Bob Johnson</TableCell>
+                        <TableCell className="hidden sm:table-cell">User</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Button size="icon" variant="ghost">
+                              <FilePenIcon className="h-4 w-4" />
+                              <span className="sr-only">Edit</span>
+                            </Button>
+                            <Button size="icon" variant="ghost">
+                              <TrashIcon className="h-4 w-4" />
+                              <span className="sr-only">Delete</span>
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            <TabsContent value="Customers">
+              <Card x-chunk="dashboard-06-chunk-0">
+                <CardHeader>
+                  <CardTitle>Customers</CardTitle>
+                  <CardDescription>Manage your users and view their information.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="hidden sm:table-cell">ID</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead className="hidden sm:table-cell">Role</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell className="hidden sm:table-cell">1</TableCell>
+                        <TableCell className="font-medium">John Doe</TableCell>
+                        <TableCell className="hidden sm:table-cell">Admin</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Button size="icon" variant="ghost">
+                              <FilePenIcon className="h-4 w-4" />
+                              <span className="sr-only">Edit</span>
+                            </Button>
+                            <Button size="icon" variant="ghost">
+                              <TrashIcon className="h-4 w-4" />
+                              <span className="sr-only">Delete</span>
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="hidden sm:table-cell">2</TableCell>
+                        <TableCell className="font-medium">Jane Smith</TableCell>
+                        <TableCell className="hidden sm:table-cell">User</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Button size="icon" variant="ghost">
+                              <FilePenIcon className="h-4 w-4" />
+                              <span className="sr-only">Edit</span>
+                            </Button>
+                            <Button size="icon" variant="ghost">
+                              <TrashIcon className="h-4 w-4" />
+                              <span className="sr-only">Delete</span>
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="hidden sm:table-cell">3</TableCell>
+                        <TableCell className="font-medium">Bob Johnson</TableCell>
+                        <TableCell className="hidden sm:table-cell">User</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Button size="icon" variant="ghost">
+                              <FilePenIcon className="h-4 w-4" />
+                              <span className="sr-only">Edit</span>
+                            </Button>
+                            <Button size="icon" variant="ghost">
+                              <TrashIcon className="h-4 w-4" />
+                              <span className="sr-only">Delete</span>
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </main>
       </div>
     </div>

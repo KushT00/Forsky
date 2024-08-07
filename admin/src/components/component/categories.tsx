@@ -9,7 +9,10 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLab
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { SVGProps } from "react"
 import { JSX } from "react/jsx-runtime"
-export function Dashboard() {
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table"
+import { Tabs } from "@radix-ui/react-tabs"
+import { PlusIcon, MoveHorizontalIcon } from "lucide-react"
+export function Categories() {
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
@@ -27,7 +30,7 @@ export function Dashboard() {
               <TooltipTrigger asChild>
                 <Link
                   href="/dashboard"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                   prefetch={false}
                 >
                   <LayoutGridIcon className="h-5 w-5" />
@@ -80,9 +83,10 @@ export function Dashboard() {
               <TooltipTrigger asChild>
                 <Link
                   href="/categories"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                   prefetch={false}
                 >
+                    
                   <ListIcon className="h-5 w-5" />
                   <span className="sr-only">Categories</span>
                 </Link>
@@ -280,37 +284,98 @@ export function Dashboard() {
           </DropdownMenu>
         </header>
         <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-          <div className="grid auto-rows-max items-start gap-4 md:gap-8">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle>Total Sales</CardTitle>
-                  <CardDescription>The total revenue generated from all sales.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-4xl font-bold">$250,000</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle>Total Products</CardTitle>
-                  <CardDescription>The total number of products in the inventory.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-4xl font-bold" >380</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle>Total Users</CardTitle>
-                  <CardDescription>Total users registered</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-4xl font-bold">250</div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+          <Tabs defaultValue="all" />
+          <Card x-chunk="dashboard-06-chunk-1">
+            <CardHeader>
+              <CardTitle>Product Categories</CardTitle>
+              <CardDescription>Manage your product categories and assign them to your products.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-medium">Categories</h2>
+                  <Button size="sm">
+                    <PlusIcon className="h-4 w-4 mr-2" />
+                    Add Category
+                  </Button>
+                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Category Id</TableHead>
+                      <TableHead>Products</TableHead>
+                      <TableHead>
+                        <span className="sr-only">Actions</span>
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell className="font-medium">Clothing</TableCell>
+                      <TableCell>556</TableCell>
+                      <TableCell>25</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button aria-haspopup="true" size="icon" variant="ghost">
+                              <MoveHorizontalIcon className="h-4 w-4" />
+                              <span className="sr-only">Toggle menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem>Edit</DropdownMenuItem>
+                            <DropdownMenuItem>Delete</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-medium">Electronics</TableCell>
+                      <TableCell>776</TableCell>
+                      <TableCell>15</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button aria-haspopup="true" size="icon" variant="ghost">
+                              <MoveHorizontalIcon className="h-4 w-4" />
+                              <span className="sr-only">Toggle menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem>Edit</DropdownMenuItem>
+                            <DropdownMenuItem>Delete</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-medium">Accessories</TableCell>
+                      <TableCell>999</TableCell>
+                      <TableCell>10</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button aria-haspopup="true" size="icon" variant="ghost">
+                              <MoveHorizontalIcon className="h-4 w-4" />
+                              <span className="sr-only">Toggle menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem>Edit</DropdownMenuItem>
+                            <DropdownMenuItem>Delete</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
         </main>
       </div>
     </div>
