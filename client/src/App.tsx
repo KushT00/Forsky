@@ -1,5 +1,5 @@
 import { Herocarousel } from "./components/component/carousel"
-import ResponsiveContainer from "./components/videobanner"
+import ResponsiveContainer from "./components/component/videobanner"
 
 export default function Home() {
   return (

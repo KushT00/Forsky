@@ -1,10 +1,10 @@
 // import * as React from 'react';
 import { Grid, Typography, Box } from '@mui/material';
-import mockvid from '../../public/mock.mp4';
+import mockvid from '../../../public/mock.mp4';
 
 export default function ResponsiveContainer() {
   return (
-    <div style={{ backgroundColor: 'rgba(135, 206, 235, 0.2)', minHeight: '100vh', padding: '20px' }}>
+    <div style={{ backgroundColor: 'rgba(135, 206, 235, 0.1)', minHeight: '100vh', padding: '20px' }}>
       <Box
         sx={{
           flexGrow: 1,

@@ -41,7 +41,7 @@ export function Herocarousel() {
   }, [currentIndex]);
 
   return (
-    <section className="w-full py-5 md:py-24 lg:py-5" style={{ backgroundColor: 'rgba(135, 206, 235, 0.2)', minHeight: '100vh', padding: '20px' }}>
+    <section className="w-full py-5 md:py-24 lg:py-5" style={{ backgroundColor: 'rgba(135, 206, 235, 0.1)', minHeight: '100vh', padding: '20px' }}>
   
 
       <div className="container">
