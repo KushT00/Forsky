@@ -1,6 +1,6 @@
 // import * as React from 'react';
 import { Grid, Typography, Box } from '@mui/material';
-import mockvid from '../public/mock.mp4';
+import mockvid from '../../public/mock.mp4';
 
 export default function ResponsiveContainer() {
   return (

@@ -1,14 +1,16 @@
 import { useState, useEffect, useRef, SVGProps } from "react";
 import vid1 from '../../../public/mock.mp4';
+import img1 from '../../../public/ring.jpg'
+import img2 from '../../../public/try.jpg'
 
 export function Herocarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const slides = [
-    { type: "image", src: "/images/photo1.jpg" },
+    { type: "image", src: img1 },
+    { type: "image", src: img2 },
     { type: "video", src: vid1 },
-    { type: "image", src: "/images/photo3.jpg" }
   ];
 
   const totalItems = slides.length;
@@ -39,7 +41,9 @@ export function Herocarousel() {
   }, [currentIndex]);
 
   return (
-    <section className="w-full py-5 md:py-24 lg:py-5">
+    <section className="w-full py-5 md:py-24 lg:py-5" style={{ backgroundColor: 'rgba(135, 206, 235, 0.2)', minHeight: '100vh', padding: '20px' }}>
+  
+
       <div className="container">
         <div className="relative rounded-xl">
           <div>
@@ -65,7 +69,7 @@ export function Herocarousel() {
           </div>
 
           <button
-            className="absolute left-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-background p-2 shadow-md transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            className="absolute -left-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-background p-2 shadow-md transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             onClick={() => {
               console.log("Previous button clicked");
               goToPrevious();
@@ -76,7 +80,7 @@ export function Herocarousel() {
           </button>
 
           <button
-            className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-background p-2 shadow-md transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            className="absolute -right-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-background p-2 shadow-md  transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring "
             onClick={() => {
               console.log("Next button clicked");
               goToNext();
