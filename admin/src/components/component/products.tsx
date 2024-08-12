@@ -8,14 +8,73 @@ import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbS
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
-import { SVGProps } from "react"
+import { SVGProps, useEffect, useState } from "react"
 import { JSX } from "react/jsx-runtime"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table"
-import { ListFilter, PlusCircle,  MoreHorizontal,File } from "lucide-react"
+import { ListFilter, PlusCircle, MoreHorizontal, File, FilePenIcon, TrashIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
+// Define the Diamond type
+interface Diamonds {
+  diamond_id: number;
+  shape: string;
+  color: string;
+  clarity: string;
+  certificate: 'GIA' | 'IGI' | 'HRD' | 'SGL' | 'FM' | 'GCAL' | 'GSI' | 'Other';
+  fluorescence?: string;
+  make?: string;
+  cut?: string;
+  polish?: string;
+  symmetry?: string;
+  table_percentage: number;
+  depth_percentage: number;
+  length_mm: number;
+  width_mm: number;
+  depth_mm: number;
+}
+
+interface Plates {
+  id: number;
+  plate_id: string;
+  size: string;  // e.g., "10x10 mm"
+  diameter: string;  // e.g., "50.000"
+  thickness: string;  // e.g., "0.500"
+  carat_weight_ea: string;  // e.g., "1.2345"
+  plate_type: string;  // e.g., "CVD"
+  material: string;  // e.g., "Diamond"
+}
+
 
 export function Products() {
+  const [diamonds, setDiamonds] = useState<Diamonds[]>([]); // Use the User type for state
+
+  useEffect(() => {
+    // Fetch users from the API
+    fetch('http://localhost:3000/api/diamonds')
+      .then(response => response.json())
+      .then(data => setDiamonds(data))
+      .catch(error => console.error('Error fetching users:', error));
+  }, []);
+
+  const [plates, setPlates] = useState<Plates[]>([]); // Use the User type for state
+
+  useEffect(() => {
+    // Fetch users from the API
+    fetch('http://localhost:3000/api/plates')
+      .then(response => response.json())
+      .then(data => setPlates(data))
+      .catch(error => console.error('Error fetching plates:', error));
+  }, []);
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
@@ -55,7 +114,7 @@ export function Products() {
               </TooltipTrigger>
               <TooltipContent side="right">Orders</TooltipContent>
             </Tooltip>
-            
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -108,7 +167,7 @@ export function Products() {
               </TooltipTrigger>
               <TooltipContent side="right">Payments</TooltipContent>
             </Tooltip>
-             
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -122,7 +181,7 @@ export function Products() {
               </TooltipTrigger>
               <TooltipContent side="right">Shipping</TooltipContent>
             </Tooltip>
-             
+
           </TooltipProvider>
         </nav>
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
@@ -182,7 +241,7 @@ export function Products() {
                   <UsersIcon className="h-5 w-5" />
                   Users
                 </Link>
-                
+
                 <Link
                   href="/products"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
@@ -207,7 +266,7 @@ export function Products() {
                   <CreditCardIcon className="h-5 w-5" />
                   Payments
                 </Link>
-                 
+
                 <Link
                   href="/shipping"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
@@ -216,7 +275,7 @@ export function Products() {
                   <TruckIcon className="h-5 w-5" />
                   Shipping
                 </Link>
-                 
+
               </nav>
             </SheetContent>
           </Sheet>
@@ -271,53 +330,58 @@ export function Products() {
             <div className="flex items-center">
               <TabsList>
                 <TabsTrigger value="all">Products</TabsTrigger>
-                <TabsTrigger value="discount">Discounts</TabsTrigger>
-                
+                <TabsTrigger value="diamonds">Diamonds</TabsTrigger>
+                <TabsTrigger value="plates">Plates</TabsTrigger>
+
               </TabsList>
-              <div className="ml-auto flex items-center gap-2">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-8 gap-1">
-                      <ListFilter className="h-3.5 w-3.5" />
-                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Filter
-                      </span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Filter by</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuCheckboxItem checked>
-                      Active
-                    </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem>Draft</DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem>
-                      Archived
-                    </DropdownMenuCheckboxItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <Button size="sm" variant="outline" className="h-8 gap-1">
-                  <File className="h-3.5 w-3.5" />
-                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Export
-                  </span>
-                </Button>
-                <Button size="sm" className="h-8 gap-1">
-                  <PlusCircle className="h-3.5 w-3.5" />
-                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Add Product
-                  </span>
-                </Button>
-              </div>
+
             </div>
             <TabsContent value="all">
               <Card x-chunk="dashboard-06-chunk-0">
-                <CardHeader>
-                  <CardTitle>Products</CardTitle>
-                  <CardDescription>
-                    Manage your products and view their sales performance.
-                  </CardDescription>
-                </CardHeader>
+                <div className="flex items-center">
+                  <CardHeader>
+                    <CardTitle>Products</CardTitle>
+                    <CardDescription>
+                      Manage your products and view their sales performance.
+                    </CardDescription>
+                  </CardHeader>
+                  <div className="ml-auto mr-10 flex items-center gap-2">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="h-8 gap-1">
+                          <ListFilter className="h-3.5 w-3.5" />
+                          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                            Filter
+                          </span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Filter by</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuCheckboxItem checked>
+                          Active
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem>Draft</DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem>
+                          Archived
+                        </DropdownMenuCheckboxItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    <Button size="sm" variant="outline" className="h-8 gap-1">
+                      <File className="h-3.5 w-3.5" />
+                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                        Export
+                      </span>
+                    </Button>
+                    <Button size="sm" className="h-8 gap-1">
+                      <PlusCircle className="h-3.5 w-3.5" />
+                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                        Add Product
+                      </span>
+                    </Button>
+                  </div>
+                </div>
+
                 <CardContent>
                   <Table>
                     <TableHeader>
@@ -326,12 +390,12 @@ export function Products() {
                           <span className="sr-only">Image</span>
                         </TableHead>
                         <TableHead>Name</TableHead>
-                        <TableHead>Status</TableHead>
+                        <TableHead>Category</TableHead>
                         <TableHead className="hidden md:table-cell">
                           Price
                         </TableHead>
                         <TableHead className="hidden md:table-cell">
-                          Total Sales
+                          Qty
                         </TableHead>
                         <TableHead className="hidden md:table-cell">
                           Created at
@@ -616,21 +680,276 @@ export function Products() {
                   </Table>
                 </CardContent>
                 <CardFooter>
-                  <div className="text-xs text-muted-foreground">
-                    Showing <strong>1-10</strong> of <strong>32</strong>{" "}
-                    products
-                  </div>
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious href="#" />
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationLink href="#">1</PaginationLink>
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationNext href="#" />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
                 </CardFooter>
               </Card>
+
+
+            </TabsContent>
+            <TabsContent value="diamonds">
+              <Card x-chunk="dashboard-06-chunk-0">
+                <div className="flex items-center">
+                  <CardHeader>
+                    <CardTitle>Diamonds</CardTitle>
+                    <CardDescription>
+                      Manage your products and view their sales performance.
+                    </CardDescription>
+                  </CardHeader>
+                  <div className="ml-auto mr-10 flex items-center gap-2">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="h-8 gap-1">
+                          <ListFilter className="h-3.5 w-3.5" />
+                          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                            Filter
+                          </span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Filter by</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuCheckboxItem checked>
+                          Active
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem>Draft</DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem>
+                          Archived
+                        </DropdownMenuCheckboxItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    <Button size="sm" variant="outline" className="h-8 gap-1">
+                      <File className="h-3.5 w-3.5" />
+                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                        Export
+                      </span>
+                    </Button>
+                    <Button size="sm" className="h-8 gap-1">
+                      <PlusCircle className="h-3.5 w-3.5" />
+                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                        Add Diamonds
+                      </span>
+                    </Button>
+                  </div>
+                </div>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <Table className="min-w-[1200px]"> {/* Adjust min-width based on your columns */}
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ID</TableHead>
+                          <TableHead>Shape</TableHead>
+                          <TableHead>Color</TableHead>
+                          <TableHead>Clarity</TableHead>
+                          <TableHead>Certificate</TableHead>
+                          <TableHead>Fluorescence</TableHead>
+                          <TableHead>Make</TableHead>
+                          <TableHead>Cut</TableHead>
+                          <TableHead>Polish</TableHead>
+                          <TableHead>Length (mm)</TableHead>
+                          <TableHead>Width (mm)</TableHead>
+                          <TableHead>Depth (mm)</TableHead>
+                          <TableHead>Actions</TableHead>
+                          <TableHead>
+                            <span className="sr-only">Actions</span>
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {diamonds.map((diamond) => (
+                          <TableRow key={diamond.diamond_id}>
+                            <TableCell>{diamond.diamond_id}</TableCell>
+                            <TableCell className="font-medium">{diamond.shape}</TableCell>
+                            <TableCell>{diamond.color}</TableCell>
+                            <TableCell>{diamond.clarity}</TableCell>
+                            <TableCell>{diamond.certificate}</TableCell>
+                            <TableCell>{diamond.fluorescence || 'N/A'}</TableCell>
+                            <TableCell>{diamond.make || 'N/A'}</TableCell>
+                            <TableCell>{diamond.cut || 'N/A'}</TableCell>
+                            <TableCell>{diamond.polish || 'N/A'}</TableCell>
+                            <TableCell>{diamond.length_mm}</TableCell>
+                            <TableCell>{diamond.width_mm}</TableCell>
+                            <TableCell>{diamond.depth_mm}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <Button size="icon" variant="ghost">
+                                  <FilePenIcon className="h-4 w-4" />
+                                  <span className="sr-only">Edit</span>
+                                </Button>
+                                <Button size="icon" variant="ghost">
+                                  <TrashIcon className="h-4 w-4" />
+                                  <span className="sr-only">Delete</span>
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+
+
+
+                <CardFooter>
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious href="#" />
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationLink href="#">1</PaginationLink>
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationNext href="#" />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </CardFooter>
+              </Card>
+
+
+            </TabsContent>
+            <TabsContent value="plates">
+              <Card x-chunk="dashboard-06-chunk-0">
+                <div className="flex items-center">
+                  <CardHeader>
+                    <CardTitle>Plates</CardTitle>
+                    <CardDescription>
+                      Manage your products and view their sales performance.
+                    </CardDescription>
+                  </CardHeader>
+                  <div className="ml-auto mr-10 flex items-center gap-2">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="h-8 gap-1">
+                          <ListFilter className="h-3.5 w-3.5" />
+                          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                            Filter
+                          </span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Filter by</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuCheckboxItem checked>
+                          Active
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem>Draft</DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem>
+                          Archived
+                        </DropdownMenuCheckboxItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    <Button size="sm" variant="outline" className="h-8 gap-1">
+                      <File className="h-3.5 w-3.5" />
+                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                        Export
+                      </span>
+                    </Button>
+                    <Button size="sm" className="h-8 gap-1">
+                      <PlusCircle className="h-3.5 w-3.5" />
+                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                        Add Product
+                      </span>
+                    </Button>
+                  </div>
+                </div>
+
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                    <TableRow>
+  {/* <TableHead>ID</TableHead> */}
+  <TableHead>Plate ID</TableHead>
+  <TableHead>Size</TableHead>
+  <TableHead>Diameter</TableHead>
+  <TableHead>Thickness</TableHead>
+  <TableHead>Carat Weight (ea)</TableHead>
+  <TableHead>Plate Type</TableHead>
+  <TableHead>Material</TableHead>
+  <TableHead>
+    <span className="sr-only">Actions</span>
+  </TableHead>
+</TableRow>
+
+                    </TableHeader>
+                    <TableBody>
+  {plates.map((plate) => (
+    <TableRow key={plate.id}>
+      <TableCell>{plate.plate_id}</TableCell>
+      <TableCell className="font-medium">{plate.size}</TableCell>
+      <TableCell>{plate.diameter}</TableCell>
+      <TableCell>{plate.thickness}</TableCell>
+      <TableCell>{plate.carat_weight_ea}</TableCell>
+      <TableCell>{plate.plate_type}</TableCell>
+      <TableCell>{plate.material}</TableCell>
+      <TableCell>
+        <div className="flex items-center gap-2">
+          <Button size="icon" variant="ghost">
+            <FilePenIcon className="h-4 w-4" />
+            <span className="sr-only">Edit</span>
+          </Button>
+          <Button size="icon" variant="ghost">
+            <TrashIcon className="h-4 w-4" />
+            <span className="sr-only">Delete</span>
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  ))}
+</TableBody>
+
+                  </Table>
+                </CardContent>
+                <CardFooter>
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious href="#" />
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationLink href="#">1</PaginationLink>
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationNext href="#" />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </CardFooter>
+              </Card>
+
+
             </TabsContent>
           </Tabs>
         </main>
       </div>
     </div>
+    
   )
 }
 
- 
+
 
 
 function CreditCardIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
@@ -833,7 +1152,7 @@ function ShoppingCartIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElemen
 }
 
 
- 
+
 
 
 function TruckIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
@@ -881,3 +1200,4 @@ function UsersIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
     </svg>
   )
 }
+

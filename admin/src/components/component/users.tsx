@@ -5,7 +5,7 @@ import Link from "next/link"
 // import { Input } from "@/components/ui/input"
 // import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu"
 // import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
-import { SVGProps } from "react"
+import { SVGProps, useEffect, useState } from "react"
 import { JSX } from "react/jsx-runtime"
 // import { Tabs, TabsList, TabsTrigger, TabsContent } from "@radix-ui/react-tabs"
 import { ListFilterIcon, FileIcon, CirclePlusIcon, FilePenIcon, TrashIcon } from "lucide-react"
@@ -18,13 +18,72 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table"
+import {
+  Pagination,
+  PaginationContent,
+
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 
 
+// Define the User type
+interface User {
+  user_id: number;
+  name: string;
+  email: string;
+  role: string;
+}
+
+const ITEMS_PER_PAGE = 5;
 export function Users() {
+  const [users, setUsers] = useState<User[]>([]); // Use the User type for state
+
+  useEffect(() => {
+    // Fetch users from the API
+    fetch('http://localhost:3000/api/users')
+      .then(response => response.json())
+      .then(data => setUsers(data))
+      .catch(error => console.error('Error fetching users:', error));
+  }, []);
+
+  // Filter users with role 'admin' or 'staff'
+  const filteredUsers = users.filter(user => user.role === 'admin' || user.role === 'staff');
+  const filteredcustomers = users.filter(user => user.role === 'customer');
+
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Calculate the start and end index for slicing the array
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentUsers = filteredUsers.slice(startIndex, endIndex);
+  const totalcurrentUsers = users.slice(startIndex, endIndex);
+  const totalcurrentcustomers = filteredcustomers.slice(startIndex, endIndex);
+
+  // Calculate total pages
+  const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
+  const totalusers=Math.ceil(users.length/ITEMS_PER_PAGE);
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+   // Handle page change
+   const handlePageChange2 = (page: number) => {
+    if (page >= 1 && page <= totalusers) {
+      setCurrentPage(page);
+    }
+  };
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
-      <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
+        <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
           <TooltipProvider>
             <Link
               href=""
@@ -60,7 +119,7 @@ export function Users() {
               </TooltipTrigger>
               <TooltipContent side="right">Orders</TooltipContent>
             </Tooltip>
-            
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -113,7 +172,7 @@ export function Users() {
               </TooltipTrigger>
               <TooltipContent side="right">Payments</TooltipContent>
             </Tooltip>
-             
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -127,7 +186,7 @@ export function Users() {
               </TooltipTrigger>
               <TooltipContent side="right">Shipping</TooltipContent>
             </Tooltip>
-             
+
           </TooltipProvider>
         </nav>
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
@@ -219,7 +278,7 @@ export function Users() {
                   <CreditCardIcon className="h-5 w-5" />
                   Payments
                 </Link>
-                
+
                 <Link
                   href="#"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
@@ -290,9 +349,9 @@ export function Users() {
             <div className="flex items-center">
               <TabsList>
                 <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="colleague">colleague</TabsTrigger>
+                <TabsTrigger value="staff">Staff</TabsTrigger>
                 <TabsTrigger value="Customers">Customers</TabsTrigger>
-                
+
               </TabsList>
               <div className="ml-auto flex items-center gap-2">
                 <DropdownMenu>
@@ -332,71 +391,63 @@ export function Users() {
                       <TableRow>
                         <TableHead className="hidden sm:table-cell">ID</TableHead>
                         <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
                         <TableHead className="hidden sm:table-cell">Role</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">1</TableCell>
-                        <TableCell className="font-medium">John Doe</TableCell>
-                        <TableCell className="hidden sm:table-cell">Admin</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Button size="icon" variant="ghost">
-                              <FilePenIcon className="h-4 w-4" />
-                              <span className="sr-only">Edit</span>
-                            </Button>
-                            <Button size="icon" variant="ghost">
-                              <TrashIcon className="h-4 w-4" />
-                              <span className="sr-only">Delete</span>
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">2</TableCell>
-                        <TableCell className="font-medium">Jane Smith</TableCell>
-                        <TableCell className="hidden sm:table-cell">User</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Button size="icon" variant="ghost">
-                              <FilePenIcon className="h-4 w-4" />
-                              <span className="sr-only">Edit</span>
-                            </Button>
-                            <Button size="icon" variant="ghost">
-                              <TrashIcon className="h-4 w-4" />
-                              <span className="sr-only">Delete</span>
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">3</TableCell>
-                        <TableCell className="font-medium">Bob Johnson</TableCell>
-                        <TableCell className="hidden sm:table-cell">User</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Button size="icon" variant="ghost">
-                              <FilePenIcon className="h-4 w-4" />
-                              <span className="sr-only">Edit</span>
-                            </Button>
-                            <Button size="icon" variant="ghost">
-                              <TrashIcon className="h-4 w-4" />
-                              <span className="sr-only">Delete</span>
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
+                      {totalcurrentUsers.map(user => (
+                        <TableRow key={user.user_id}>
+                          <TableCell className="hidden sm:table-cell">{user.user_id}</TableCell>
+                          <TableCell className="font-medium">{user.name}</TableCell>
+                          <TableCell>{user.email}</TableCell>
+                          <TableCell className="hidden sm:table-cell">{user.role}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Button size="icon" variant="ghost">
+                                <FilePenIcon className="h-4 w-4" />
+                                <span className="sr-only">Edit</span>
+                              </Button>
+                              <Button size="icon" variant="ghost">
+                                <TrashIcon className="h-4 w-4" />
+                                <span className="sr-only">Delete</span>
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                     </TableBody>
                   </Table>
                 </CardContent>
               </Card>
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious href="#" onClick={() => handlePageChange2(currentPage - 1)} />
+                  </PaginationItem>
+                  {Array.from({ length: totalPages }, (_, index) => (
+                    <PaginationItem key={index + 1}>
+                      <PaginationLink
+                        href="#"
+                        onClick={() => handlePageChange2(index + 1)}
+                        isActive={index + 1 === currentPage}
+                      >
+                        {index + 1}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+                  <PaginationItem>
+                    <PaginationNext href="#" onClick={() => handlePageChange2(currentPage + 1)} />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+
             </TabsContent>
-            <TabsContent value="colleague">
+            <TabsContent value="staff">
               <Card x-chunk="dashboard-06-chunk-0">
                 <CardHeader>
-                  <CardTitle>colleague</CardTitle>
+                  <CardTitle>Colleague</CardTitle>
                   <CardDescription>Manage your users and view their information.</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -405,67 +456,59 @@ export function Users() {
                       <TableRow>
                         <TableHead className="hidden sm:table-cell">ID</TableHead>
                         <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
                         <TableHead className="hidden sm:table-cell">Role</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">1</TableCell>
-                        <TableCell className="font-medium">John Doe</TableCell>
-                        <TableCell className="hidden sm:table-cell">Admin</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Button size="icon" variant="ghost">
-                              <FilePenIcon className="h-4 w-4" />
-                              <span className="sr-only">Edit</span>
-                            </Button>
-                            <Button size="icon" variant="ghost">
-                              <TrashIcon className="h-4 w-4" />
-                              <span className="sr-only">Delete</span>
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">2</TableCell>
-                        <TableCell className="font-medium">Jane Smith</TableCell>
-                        <TableCell className="hidden sm:table-cell">User</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Button size="icon" variant="ghost">
-                              <FilePenIcon className="h-4 w-4" />
-                              <span className="sr-only">Edit</span>
-                            </Button>
-                            <Button size="icon" variant="ghost">
-                              <TrashIcon className="h-4 w-4" />
-                              <span className="sr-only">Delete</span>
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">3</TableCell>
-                        <TableCell className="font-medium">Bob Johnson</TableCell>
-                        <TableCell className="hidden sm:table-cell">User</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Button size="icon" variant="ghost">
-                              <FilePenIcon className="h-4 w-4" />
-                              <span className="sr-only">Edit</span>
-                            </Button>
-                            <Button size="icon" variant="ghost">
-                              <TrashIcon className="h-4 w-4" />
-                              <span className="sr-only">Delete</span>
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
+                      {currentUsers.map(user => (
+                        <TableRow key={user.user_id}>
+                          <TableCell className="hidden sm:table-cell">{user.user_id}</TableCell>
+                          <TableCell className="font-medium">{user.name}</TableCell>
+                          <TableCell className="font-medium">{user.email}</TableCell>
+                          <TableCell className="hidden sm:table-cell">{user.role}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Button size="icon" variant="ghost">
+                                <FilePenIcon className="h-4 w-4" />
+                                <span className="sr-only">Edit</span>
+                              </Button>
+                              <Button size="icon" variant="ghost">
+                                <TrashIcon className="h-4 w-4" />
+                                <span className="sr-only">Delete</span>
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                     </TableBody>
                   </Table>
                 </CardContent>
               </Card>
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious href="#" onClick={() => handlePageChange(currentPage - 1)} />
+                  </PaginationItem>
+                  {Array.from({ length: totalPages }, (_, index) => (
+                    <PaginationItem key={index + 1}>
+                      <PaginationLink
+                        href="#"
+                        onClick={() => handlePageChange(index + 1)}
+                        isActive={index + 1 === currentPage}
+                      >
+                        {index + 1}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+                  <PaginationItem>
+                    <PaginationNext href="#" onClick={() => handlePageChange(currentPage + 1)} />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
             </TabsContent>
+
             <TabsContent value="Customers">
               <Card x-chunk="dashboard-06-chunk-0">
                 <CardHeader>
@@ -473,67 +516,37 @@ export function Users() {
                   <CardDescription>Manage your users and view their information.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Table>
+                <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead className="hidden sm:table-cell">ID</TableHead>
                         <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
                         <TableHead className="hidden sm:table-cell">Role</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">1</TableCell>
-                        <TableCell className="font-medium">John Doe</TableCell>
-                        <TableCell className="hidden sm:table-cell">Admin</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Button size="icon" variant="ghost">
-                              <FilePenIcon className="h-4 w-4" />
-                              <span className="sr-only">Edit</span>
-                            </Button>
-                            <Button size="icon" variant="ghost">
-                              <TrashIcon className="h-4 w-4" />
-                              <span className="sr-only">Delete</span>
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">2</TableCell>
-                        <TableCell className="font-medium">Jane Smith</TableCell>
-                        <TableCell className="hidden sm:table-cell">User</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Button size="icon" variant="ghost">
-                              <FilePenIcon className="h-4 w-4" />
-                              <span className="sr-only">Edit</span>
-                            </Button>
-                            <Button size="icon" variant="ghost">
-                              <TrashIcon className="h-4 w-4" />
-                              <span className="sr-only">Delete</span>
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">3</TableCell>
-                        <TableCell className="font-medium">Bob Johnson</TableCell>
-                        <TableCell className="hidden sm:table-cell">User</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Button size="icon" variant="ghost">
-                              <FilePenIcon className="h-4 w-4" />
-                              <span className="sr-only">Edit</span>
-                            </Button>
-                            <Button size="icon" variant="ghost">
-                              <TrashIcon className="h-4 w-4" />
-                              <span className="sr-only">Delete</span>
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
+                      {totalcurrentcustomers.map(user => (
+                        <TableRow key={user.user_id}>
+                          <TableCell className="hidden sm:table-cell">{user.user_id}</TableCell>
+                          <TableCell className="font-medium">{user.name}</TableCell>
+                          <TableCell className="font-medium">{user.email}</TableCell>
+                          <TableCell className="hidden sm:table-cell">{user.role}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Button size="icon" variant="ghost">
+                                <FilePenIcon className="h-4 w-4" />
+                                <span className="sr-only">Edit</span>
+                              </Button>
+                              <Button size="icon" variant="ghost">
+                                <TrashIcon className="h-4 w-4" />
+                                <span className="sr-only">Delete</span>
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                     </TableBody>
                   </Table>
                 </CardContent>
@@ -546,7 +559,7 @@ export function Users() {
   )
 }
 
- 
+
 function BarChartIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -768,7 +781,7 @@ function ShoppingCartIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElemen
 }
 
 
- 
+
 
 
 function TruckIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {

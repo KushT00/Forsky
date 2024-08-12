@@ -7,9 +7,60 @@ import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbS
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
-import { SVGProps } from "react"
+import { SVGProps, useEffect, useState } from "react"
 import { JSX } from "react/jsx-runtime"
+
+interface User {
+  user_id: number;
+  
+}
 export function Dashboard() {
+  const [users, setUsers] = useState<User[]>([]); // Use the User type for state
+
+  useEffect(() => {
+    // Fetch users from the API
+    fetch('http://localhost:3000/api/users')
+      .then(response => response.json())
+      .then(data => setUsers(data))
+      .catch(error => console.error('Error fetching users:', error));
+  }, []);
+
+  const [products, setProducts] = useState<User[]>([]); // Use the User type for state
+
+  useEffect(() => {
+    // Fetch users from the API
+    fetch('http://localhost:3000/api/products')
+      .then(response => response.json())
+      .then(data => setProducts(data))
+      .catch(error => console.error('Error fetching users:', error));
+  }, []);
+
+  
+  const [diamonds, setDiamonds] = useState<User[]>([]); // Use the User type for state
+
+  useEffect(() => {
+    // Fetch users from the API
+    fetch('http://localhost:3000/api/diamonds')
+      .then(response => response.json())
+      .then(data => setDiamonds(data))
+      .catch(error => console.error('Error fetching users:', error));
+  }, []);
+  const [plates, setPlates] = useState([]); // Use the User type for state
+
+  useEffect(() => {
+    // Fetch users from the API
+    fetch('http://localhost:3000/api/plates')
+      .then(response => response.json())
+      .then(data => setPlates(data))
+      .catch(error => console.error('Error fetching plates:', error));
+  }, []);
+
+
+  const Totalplates= plates.length;
+  const Totaluser= users.length;
+  const Totalproducts= products.length;
+  const Totaldiamonds= diamonds.length;
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
@@ -278,7 +329,16 @@ export function Dashboard() {
                   <CardDescription>The total number of products in the inventory.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-4xl font-bold" >380</div>
+                  <div className="text-4xl font-bold" >{Totalproducts}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle>Total Diamonds</CardTitle>
+                  <CardDescription>The total number of diamonds listed.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-4xl font-bold" >{Totaldiamonds}</div>
                 </CardContent>
               </Card>
               <Card>
@@ -287,7 +347,16 @@ export function Dashboard() {
                   <CardDescription>Total users registered</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-4xl font-bold">250</div>
+                  <div className="text-4xl font-bold">{Totaluser}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle>Total Plates</CardTitle>
+                  <CardDescription>Total plates listed</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-4xl font-bold">{Totalplates}</div>
                 </CardContent>
               </Card>
             </div>
