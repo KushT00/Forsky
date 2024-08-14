@@ -12,23 +12,99 @@ import { JSX } from "react/jsx-runtime"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table"
 import { Tabs } from "@radix-ui/react-tabs"
 import { PlusIcon, FilePenIcon, TrashIcon } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+
+} from "@/components/ui/dialog"
+import { Textarea } from "../ui/textarea"
+
 interface CATEGORIES {
-  category_id: Key ;
-  // category_id: Key | null | undefined |string;
-
-  name: string;
-
+  category_id: Key;
+    name: string;
+    description: string;  // Add this line if description is part of the data
+    
 }
 export function Categories() {
-  const [categories, setCategories] = useState<CATEGORIES[]>([]); // Use the User type for state
+  const [categories, setCategories] = useState<CATEGORIES[]>([]);
+  const [openAddDialog, setOpenAddDialog] = useState(false);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [newCategory, setNewCategory] = useState({ name: '', description: '' });
+  const [editCategory, setEditCategory] = useState({ category_id: 0, name: '', description: '' });
 
   useEffect(() => {
-    // Fetch users from the API
     fetch('http://localhost:3000/api/categories')
       .then(response => response.json())
       .then(data => setCategories(data))
-      .catch(error => console.error('Error fetching users:', error));
+      .catch(error => console.error('Error fetching categories:', error));
   }, []);
+
+  const handleAddCategory = () => {
+    fetch('http://localhost:3000/api/categories', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newCategory),
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to add category');
+        }
+        return response.json();
+      })
+      .then(data => {
+        setCategories([...categories, data]);
+        setOpenAddDialog(false);
+        setNewCategory({ name: '', description: '' });
+      })
+      .catch(error => console.error('Error adding category:', error));
+  };
+
+  const handleEditCategory = () => {
+    fetch(`http://localhost:3000/api/categories/${editCategory.category_id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name: editCategory.name, description: editCategory.description }),
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to update category');
+        }
+        return response.json();
+      })
+      .then(data => {
+        setCategories(categories.map(cat => (cat.category_id === editCategory.category_id ? data : cat)));
+        setOpenEditDialog(false);
+      })
+      .catch(error => console.error('Error updating category:', error));
+  };
+
+  const handleDeleteCategory = (category_id: number) => {
+    if (window.confirm("Are you sure you want to delete this category?")) {
+      fetch(`http://localhost:3000/api/categories/${category_id}`, {
+        method: 'DELETE',
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to delete category');
+          }
+          setCategories(categories.filter(cat => cat.category_id !== category_id));
+        })
+        .catch(error => console.error('Error deleting category:', error));
+    }
+  };
+
+  const openEditDialogWithCategory = (category: CATEGORIES) => {
+    setEditCategory(category);
+    setOpenEditDialog(true);
+  };
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
@@ -68,7 +144,7 @@ export function Categories() {
               </TooltipTrigger>
               <TooltipContent side="right">Orders</TooltipContent>
             </Tooltip>
-            
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -102,7 +178,7 @@ export function Categories() {
                   className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                   prefetch={false}
                 >
-                    
+
                   <ListIcon className="h-5 w-5" />
                   <span className="sr-only">Categories</span>
                 </Link>
@@ -122,7 +198,7 @@ export function Categories() {
               </TooltipTrigger>
               <TooltipContent side="right">Payments</TooltipContent>
             </Tooltip>
-             
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -136,7 +212,7 @@ export function Categories() {
               </TooltipTrigger>
               <TooltipContent side="right">Shipping</TooltipContent>
             </Tooltip>
-             
+
           </TooltipProvider>
         </nav>
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
@@ -196,7 +272,7 @@ export function Categories() {
                   <UsersIcon className="h-5 w-5" />
                   Users
                 </Link>
-                
+
                 <Link
                   href="/products"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
@@ -221,7 +297,7 @@ export function Categories() {
                   <CreditCardIcon className="h-5 w-5" />
                   Payments
                 </Link>
-                 
+
                 <Link
                   href="/shipping"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
@@ -230,7 +306,7 @@ export function Categories() {
                   <TruckIcon className="h-5 w-5" />
                   Shipping
                 </Link>
-                 
+
               </nav>
             </SheetContent>
           </Sheet>
@@ -291,41 +367,89 @@ export function Categories() {
               <div className="grid gap-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-medium">Categories</h2>
-                  <Button size="sm">
+                  <Button size="sm" onClick={() =>setOpenAddDialog(true)}>
                     <PlusIcon className="h-4 w-4 mr-2" />
                     Add Category
                   </Button>
                 </div>
                 <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Category Id</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead >Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                  {categories.map((cat) => (
-                          <TableRow key={cat.category_id}>
-                            <TableCell>{cat.category_id}</TableCell>
-                            <TableCell className="font-medium">{cat.name}</TableCell>
-                           
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Button size="icon" variant="ghost">
-                                  <FilePenIcon className="h-4 w-4" />
-                                  <span className="sr-only">Edit</span>
-                                </Button>
-                                <Button size="icon" variant="ghost">
-                                  <TrashIcon className="h-4 w-4" />
-                                  <span className="sr-only">Delete</span>
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                  </TableBody>
-                </Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Category Id</TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {categories.map((cat) => (
+            <TableRow key={cat.category_id}>
+              <TableCell>{cat.category_id}</TableCell>
+              <TableCell className="font-medium">{cat.name}</TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <Button size="icon" variant="ghost" onClick={() => openEditDialogWithCategory(cat)}>
+                    <FilePenIcon className="h-4 w-4" />
+                    <span className="sr-only">Edit</span>
+                  </Button>
+                  <Button size="icon" variant="ghost" onClick={() => handleDeleteCategory(cat.category_id)}>
+                    <TrashIcon className="h-4 w-4" />
+                    <span className="sr-only">Delete</span>
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+                 {/* Add Category Dialog */}
+      <Dialog open={openAddDialog} onOpenChange={setOpenAddDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Category</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              placeholder="Category Name"
+              value={newCategory.name}
+              onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
+            />
+            <Textarea
+              placeholder="Category Description"
+              value={newCategory.description}
+              onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
+            />
+          </div>
+          <DialogFooter>
+            <Button onClick={handleAddCategory}>Add</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Category Dialog */}
+      <Dialog open={openEditDialog} onOpenChange={setOpenEditDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Category</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              placeholder="Category Name"
+              value={editCategory.name}
+              onChange={(e) => setEditCategory({ ...editCategory, name: e.target.value })}
+            />
+            <Textarea
+              placeholder="Category Description"
+              value={editCategory.description}
+              onChange={(e) => setEditCategory({ ...editCategory, description: e.target.value })}
+            />
+          </div>
+          <DialogFooter>
+            <Button onClick={handleEditCategory}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
               </div>
             </CardContent>
           </Card>
@@ -335,7 +459,7 @@ export function Categories() {
   )
 }
 
- 
+
 
 
 function CreditCardIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
@@ -538,7 +662,7 @@ function ShoppingCartIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElemen
 }
 
 
- 
+
 
 
 function TruckIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {

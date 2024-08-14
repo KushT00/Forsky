@@ -9,13 +9,14 @@ import { Shipping } from './components/component/shipping';
 import { Filter2 } from './components/component/filter2';
 import { Login } from './components/component/login';
 import { Signup } from './components/component/signup';
+import { ToastDemo } from './components/component/body';
  // Assume you have a Home component
 // kush
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={"Hello"} />
+        <Route path="/" element={<ToastDemo/>} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/users" element={<Users />} />
