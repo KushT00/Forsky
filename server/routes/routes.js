@@ -9,7 +9,7 @@ const { fetchPlates} = require('../controllers/platesController');
 const {putUser, delUser, loginUser}= require('../models/userModel');
 const { addPlates, putPlates, delPlates } = require('../models/platesModel');
 const { addDiamonds, putDiamonds, delDiamonds } = require('../models/diamondsModel');
-const { postCategory, putCategory, delCategory } = require('../models/categoryModel');
+const { postCategory, putCategory, delCategory, addSubCategory } = require('../models/categoryModel');
 const { delOrder, putOrder, addOrder } = require('../models/orderModel');
 const { addProducts, putProducts, delProduct } = require('../models/productModel');
 
@@ -55,6 +55,7 @@ router.delete('/orders/:order_id', delOrder);
 // categories
 router.get('/categories', fetchCategory);
 router.post('/categories', postCategory);
+router.post('/sub', addSubCategory);
 router.put('/categories/:category_id',putCategory);
 router.delete('/categories/:category_id', delCategory);
 

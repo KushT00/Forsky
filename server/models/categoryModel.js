@@ -3,12 +3,46 @@ const pool = require('../db');
 
 const getCategory = async () => {
   try {
-    const res = await pool.query('SELECT * FROM categories');
+    const res = await pool.query('SELECT * FROM categories ORDER BY category_id ASC ');
     return res.rows;
   } catch (err) {
     throw err;
   }
 };
+
+const addSubCategory = async (req, res) => {
+  const { categoryId, subCategory } = req.body;
+
+  try {
+    // Check if the category with the given ID exists
+    const existingCategory = await pool.query(
+      'SELECT * FROM categories WHERE category_id = $1',
+      [categoryId]
+    );
+
+    if (existingCategory.rows.length === 0) {
+      return res.status(404).json({ error: 'Category not found' });
+    }
+
+    // Check if the subCategory already exists in the array
+    const subCategoriesArray = existingCategory.rows[0].sub_categories || [];
+    if (subCategoriesArray.includes(subCategory)) {
+      return res.status(400).json({ error: 'Subcategory already exists' });
+    }
+
+    // Add the subCategory to the sub_categories array
+    const updatedCategory = await pool.query(
+      'UPDATE categories SET sub_categories = array_append(sub_categories, $2) WHERE category_id = $1 RETURNING *',
+      [categoryId, subCategory]
+    );
+
+    res.json(updatedCategory.rows[0]);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
+
+
 const postCategory = async (req, res) => {
   const { name, description } = req.body;
   try {
@@ -24,7 +58,7 @@ const postCategory = async (req, res) => {
 
     // Insert the new category
     const newCategory = await pool.query(
-      'INSERT INTO categories (name, description) VALUES ($1, $2) RETURNING *',
+      'INSERT INTO categories (name, description ) VALUES ($1, $2) RETURNING *',
       [name, description]
     );
     res.json(newCategory.rows[0]);
@@ -65,4 +99,4 @@ const delCategory=async (req, res) => {
 }
 
 
-module.exports = { getCategory,postCategory,putCategory,delCategory};
+module.exports = { getCategory,postCategory,putCategory,delCategory,addSubCategory};

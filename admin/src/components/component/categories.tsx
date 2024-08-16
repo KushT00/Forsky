@@ -7,15 +7,18 @@ import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbS
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
-import { Key, SVGProps, useEffect, useState } from "react"
+import { Key, SetStateAction, SVGProps, useEffect, useState } from "react"
 import { JSX } from "react/jsx-runtime"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table"
 import { Tabs } from "@radix-ui/react-tabs"
 import { PlusIcon, FilePenIcon, TrashIcon, TagIcon } from "lucide-react"
-import { jwtDecode, JwtPayload  } from "jwt-decode";
+import axios from 'axios';
 
-interface custompayload extends JwtPayload{
-  user_id:string
+
+import { jwtDecode, JwtPayload } from "jwt-decode";
+
+interface custompayload extends JwtPayload {
+  user_id: string
 }
 import {
   Dialog,
@@ -27,15 +30,18 @@ import {
 } from "@/components/ui/dialog"
 import { Textarea } from "../ui/textarea"
 import { useNavigate } from "react-router-dom"
+import { Badge } from "../ui/badge"
 
 interface CATEGORIES {
+  sub_categories: boolean
   category_id: Key;
-    name: string;
-    description: string;  // Add this line if description is part of the data
-    
+  name: string;
+  description: string;  // Add this line if description is part of the data
+
 }
 export function Categories() {
   const [categories, setCategories] = useState<CATEGORIES[]>([]);
+  const [openAddSubCategory, setOpenAddSubCategory] = useState(false);
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [newCategory, setNewCategory] = useState({ name: '', description: '' });
@@ -112,7 +118,7 @@ export function Categories() {
   };
 
   const [role, setRole] = useState<string | null>(null);
-  
+
   useEffect(() => {
     // Retrieve the role from local storage
     const storedRole = localStorage.getItem("role");
@@ -131,9 +137,9 @@ export function Categories() {
 
   };
 
-  
+
   const [username, setUsername] = useState();
-    
+
   useEffect(() => {
     const fetchUserData = async (user_id: string) => {
       // console.log(user_id)
@@ -153,148 +159,183 @@ export function Categories() {
 
     const token = localStorage.getItem('token');
     if (token) {
-      const decodedToken= jwtDecode<custompayload>(token);
+      const decodedToken = jwtDecode<custompayload>(token);
       const user_id = decodedToken.user_id;
       fetchUserData(user_id);
     } else {
       console.log("No token found in local storage.");
     }
   }, []);
+
+  // const [openAddSubCategory, setOpenAddSubCategory] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+  const [subCategoryName, setSubCategoryName] = useState('');
+
+  const handleOpenDialog = (categoryId: SetStateAction<null> | Key) => {
+    setSelectedCategoryId(categoryId);
+    setOpenAddSubCategory(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenAddSubCategory(false);
+    setSubCategoryName('');
+  };
+
+  const handleAddSubCategory = async (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+    
+    try {
+      await axios.post('http://localhost:3000/api/sub', {
+        categoryId: selectedCategoryId,
+        subCategory: subCategoryName,
+      });
+
+      // You can add code here to update the UI after a successful request, 
+      // such as re-fetching the categories or updating the state locally.
+
+      handleCloseDialog();
+    } catch (error) {
+      console.error('Error adding sub-category:', error);
+      // Handle the error (e.g., show an error message)
+    }
+  };
+
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
-      <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
-      <TooltipProvider>
-        <Link
-          href=""
-          className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
-          prefetch={false}
-        >
-          <Package2Icon className="h-4 w-4 transition-all group-hover:scale-110" />
-          <span className="sr-only">Acme Inc</span>
-        </Link>
-        
-        {role === "admin" && (
-          <>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/dashboard"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <LayoutGridIcon className="h-5 w-5" />
-                  <span className="sr-only">Overview</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Overview</TooltipContent>
-            </Tooltip>
+        <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
+          <TooltipProvider>
+            <Link
+              href=""
+              className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
+              prefetch={false}
+            >
+              <Package2Icon className="h-4 w-4 transition-all group-hover:scale-110" />
+              <span className="sr-only">Acme Inc</span>
+            </Link>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/orders"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <ShoppingCartIcon className="h-5 w-5" />
-                  <span className="sr-only">Orders</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Orders</TooltipContent>
-            </Tooltip>
+            {role === "admin" && (
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href="/dashboard"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                      prefetch={false}
+                    >
+                      <LayoutGridIcon className="h-5 w-5" />
+                      <span className="sr-only">Overview</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Overview</TooltipContent>
+                </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/users"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <UsersIcon className="h-5 w-5" />
-                  <span className="sr-only">Users</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Users</TooltipContent>
-            </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href="/orders"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                      prefetch={false}
+                    >
+                      <ShoppingCartIcon className="h-5 w-5" />
+                      <span className="sr-only">Orders</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Orders</TooltipContent>
+                </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/payments"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <CreditCardIcon className="h-5 w-5" />
-                  <span className="sr-only">Payments</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Payments</TooltipContent>
-            </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href="/users"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                      prefetch={false}
+                    >
+                      <UsersIcon className="h-5 w-5" />
+                      <span className="sr-only">Users</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Users</TooltipContent>
+                </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/shipping"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <TruckIcon className="h-5 w-5" />
-                  <span className="sr-only">Shipping</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Shipping</TooltipContent>
-            </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href="/payments"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                      prefetch={false}
+                    >
+                      <CreditCardIcon className="h-5 w-5" />
+                      <span className="sr-only">Payments</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Payments</TooltipContent>
+                </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/discounts"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <TagIcon className="mr-1.5 h-4 w-4" />
-                  <span className="sr-only">Discounts</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Discounts</TooltipContent>
-            </Tooltip>
-          </>
-        )}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href="/shipping"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                      prefetch={false}
+                    >
+                      <TruckIcon className="h-5 w-5" />
+                      <span className="sr-only">Shipping</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Shipping</TooltipContent>
+                </Tooltip>
 
-        {(role === "admin" || role === "staff") && (
-          <>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/products"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <PackageIcon className="h-5 w-5" />
-                  <span className="sr-only">Products</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Products</TooltipContent>
-            </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href="/discounts"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                      prefetch={false}
+                    >
+                      <TagIcon className="mr-1.5 h-4 w-4" />
+                      <span className="sr-only">Discounts</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Discounts</TooltipContent>
+                </Tooltip>
+              </>
+            )}
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/categories"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <ListIcon className="h-5 w-5" />
-                  <span className="sr-only">Categories</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Categories</TooltipContent>
-            </Tooltip>
-          </>
-        )}
-      </TooltipProvider>
-    </nav>
+            {(role === "admin" || role === "staff") && (
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href="/products"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                      prefetch={false}
+                    >
+                      <PackageIcon className="h-5 w-5" />
+                      <span className="sr-only">Products</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Products</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href="/categories"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                      prefetch={false}
+                    >
+                      <ListIcon className="h-5 w-5" />
+                      <span className="sr-only">Categories</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Categories</TooltipContent>
+                </Tooltip>
+              </>
+            )}
+          </TooltipProvider>
+        </nav>
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
           <TooltipProvider>
             <Tooltip>
@@ -427,7 +468,7 @@ export function Categories() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>{username?username:"My Account"}</DropdownMenuLabel>
+              <DropdownMenuLabel>{username ? username : "My Account"}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
@@ -447,87 +488,126 @@ export function Categories() {
               <div className="grid gap-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-medium">Categories</h2>
-                  <Button size="sm" onClick={() =>setOpenAddDialog(true)}>
+                  <Button size="sm" onClick={() => setOpenAddDialog(true)}>
                     <PlusIcon className="h-4 w-4 mr-2" />
                     Add Category
                   </Button>
                 </div>
                 <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Category Id</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {categories.map((cat) => (
-            <TableRow key={cat.category_id}>
-              <TableCell>{cat.category_id}</TableCell>
-              <TableCell className="font-medium">{cat.name}</TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Button size="icon" variant="ghost" onClick={() => openEditDialogWithCategory(cat)}>
-                    <FilePenIcon className="h-4 w-4" />
-                    <span className="sr-only">Edit</span>
-                  </Button>
-                  <Button size="icon" variant="ghost" onClick={() => handleDeleteCategory(cat.category_id)}>
-                    <TrashIcon className="h-4 w-4" />
-                    <span className="sr-only">Delete</span>
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-                 {/* Add Category Dialog */}
-      <Dialog open={openAddDialog} onOpenChange={setOpenAddDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add New Category</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Input
-              placeholder="Category Name"
-              value={newCategory.name}
-              onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
-            />
-            <Textarea
-              placeholder="Category Description"
-              value={newCategory.description}
-              onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
-            />
-          </div>
-          <DialogFooter>
-            <Button onClick={handleAddCategory}>Add</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Category Id</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Sub Categories</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {categories.map((cat) => (
+                      <TableRow key={cat.category_id}>
+                        <TableCell>{cat.category_id}</TableCell>
+                        <TableCell className="font-medium">{cat.name}</TableCell>
+                        <TableCell className="font-medium">
+                          {Array.isArray(cat.sub_categories) && cat.sub_categories.length > 0 ? (
+                            cat.sub_categories.map((subCategory: string, index: number) => (
+                              <Badge key={index} className="mr-2">
+                                {subCategory}
+                              </Badge>
+                            ))
+                          ) : (
+                            <span> </span>
+                          )}
+                          <Button size="icon" variant="ghost" onClick={() => handleOpenDialog(cat.category_id)}>
+                            <PlusIcon className="h-4 w-4" />
+                            <span className="sr-only">Add Sub-Category</span>
+                          </Button>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Button size="icon" variant="ghost" onClick={() => openEditDialogWithCategory(cat)}>
+                              <FilePenIcon className="h-4 w-4" />
+                              <span className="sr-only">Edit</span>
+                            </Button>
+                            <Button size="icon" variant="ghost" onClick={() => handleDeleteCategory(cat.category_id)}>
+                              <TrashIcon className="h-4 w-4" />
+                              <span className="sr-only">Delete</span>
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
 
-      {/* Edit Category Dialog */}
-      <Dialog open={openEditDialog} onOpenChange={setOpenEditDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Category</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Input
-              placeholder="Category Name"
-              value={editCategory.name}
-              onChange={(e) => setEditCategory({ ...editCategory, name: e.target.value })}
-            />
-            <Textarea
-              placeholder="Category Description"
-              value={editCategory.description}
-              onChange={(e) => setEditCategory({ ...editCategory, description: e.target.value })}
-            />
-          </div>
-          <DialogFooter>
-            <Button onClick={handleEditCategory}>Save Changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+                  <Dialog open={openAddSubCategory} onOpenChange={handleCloseDialog}>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Add Sub-Category</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <Input
+                          placeholder="Sub-Category Name"
+                          value={subCategoryName}
+                          onChange={(e) => setSubCategoryName(e.target.value)}
+                        />
+                      </div>
+                      <DialogFooter>
+                        <Button onClick={handleCloseDialog} variant="ghost">
+                          Cancel
+                        </Button>
+                        <Button onClick={handleAddSubCategory} className="ml-2">
+                          Add
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </Table>
+                {/* Add Category Dialog */}
+                <Dialog open={openAddDialog} onOpenChange={setOpenAddDialog}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add New Category</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <Input
+                        placeholder="Category Name"
+                        value={newCategory.name}
+                        onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
+                      />
+                      <Textarea
+                        placeholder="Category Description"
+                        value={newCategory.description}
+                        onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
+                      />
+                    </div>
+                    <DialogFooter>
+                      <Button onClick={handleAddCategory}>Add</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Edit Category Dialog */}
+                <Dialog open={openEditDialog} onOpenChange={setOpenEditDialog}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Edit Category</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <Input
+                        placeholder="Category Name"
+                        value={editCategory.name}
+                        onChange={(e) => setEditCategory({ ...editCategory, name: e.target.value })}
+                      />
+                      <Textarea
+                        placeholder="Category Description"
+                        value={editCategory.description}
+                        onChange={(e) => setEditCategory({ ...editCategory, description: e.target.value })}
+                      />
+                    </div>
+                    <DialogFooter>
+                      <Button onClick={handleEditCategory}>Save Changes</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
 
 
               </div>
