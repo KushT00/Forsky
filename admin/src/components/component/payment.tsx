@@ -13,152 +13,194 @@ import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, Pagi
 // import { Tabs } from "@radix-ui/react-tabs"
 // import { Table, Badge } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import {Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "../ui/table"
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "../ui/table"
 import { TagIcon } from "lucide-react"
+import { useNavigate } from "react-router-dom"
+import { jwtDecode } from "jwt-decode";
+
 export function Payments() {
   const [role, setRole] = useState<string | null>(null);
-  
+
   useEffect(() => {
     // Retrieve the role from local storage
     const storedRole = localStorage.getItem("role");
     setRole(storedRole);
   }, []);
+  const navigate = useNavigate(); // Updated hook
 
+  const handleLogout = () => {
+    // Remove role and token from localStorage
+    localStorage.removeItem('role');
+    localStorage.removeItem('token');
+
+    // Optionally, redirect to login page
+    navigate('/login'); // Updated function
+
+  };
+
+  const [username, setUsername] = useState();
+    
+  useEffect(() => {
+    const fetchUserData = async (user_id: string) => {
+      // console.log(user_id)
+      try {
+        const response = await fetch(`http://localhost:3000/api/users/${user_id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setUsername(data.name);
+        } else {
+          console.error("Failed to fetch user data.");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+    // console.log(username)
+
+    const token = localStorage.getItem('token');
+    if (token) {
+      const decodedToken= jwtDecode(token);
+      const user_id = decodedToken.user_id;
+      fetchUserData(user_id);
+    } else {
+      console.log("No token found in local storage.");
+    }
+  }, []);
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
-      <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
-      <TooltipProvider>
-        <Link
-          href=""
-          className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
-          prefetch={false}
-        >
-          <Package2Icon className="h-4 w-4 transition-all group-hover:scale-110" />
-          <span className="sr-only">Acme Inc</span>
-        </Link>
-        
-        {role === "admin" && (
-          <>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/dashboard"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <LayoutGridIcon className="h-5 w-5" />
-                  <span className="sr-only">Overview</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Overview</TooltipContent>
-            </Tooltip>
+        <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
+          <TooltipProvider>
+            <Link
+              href=""
+              className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
+              prefetch={false}
+            >
+              <Package2Icon className="h-4 w-4 transition-all group-hover:scale-110" />
+              <span className="sr-only">Acme Inc</span>
+            </Link>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/orders"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <ShoppingCartIcon className="h-5 w-5" />
-                  <span className="sr-only">Orders</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Orders</TooltipContent>
-            </Tooltip>
+            {role === "admin" && (
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href="/dashboard"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                      prefetch={false}
+                    >
+                      <LayoutGridIcon className="h-5 w-5" />
+                      <span className="sr-only">Overview</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Overview</TooltipContent>
+                </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/users"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <UsersIcon className="h-5 w-5" />
-                  <span className="sr-only">Users</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Users</TooltipContent>
-            </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href="/orders"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                      prefetch={false}
+                    >
+                      <ShoppingCartIcon className="h-5 w-5" />
+                      <span className="sr-only">Orders</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Orders</TooltipContent>
+                </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/payments"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <CreditCardIcon className="h-5 w-5" />
-                  <span className="sr-only">Payments</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Payments</TooltipContent>
-            </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href="/users"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                      prefetch={false}
+                    >
+                      <UsersIcon className="h-5 w-5" />
+                      <span className="sr-only">Users</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Users</TooltipContent>
+                </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/shipping"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <TruckIcon className="h-5 w-5" />
-                  <span className="sr-only">Shipping</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Shipping</TooltipContent>
-            </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href="/payments"
+                     className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                      prefetch={false}
+                    >
+                      <CreditCardIcon className="h-5 w-5" />
+                      <span className="sr-only">Payments</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Payments</TooltipContent>
+                </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/discounts"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <TagIcon className="mr-1.5 h-4 w-4" />
-                  <span className="sr-only">Discounts</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Discounts</TooltipContent>
-            </Tooltip>
-          </>
-        )}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href="/shipping"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                      prefetch={false}
+                    >
+                      <TruckIcon className="h-5 w-5" />
+                      <span className="sr-only">Shipping</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Shipping</TooltipContent>
+                </Tooltip>
 
-        {(role === "admin" || role === "staff") && (
-          <>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/products"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <PackageIcon className="h-5 w-5" />
-                  <span className="sr-only">Products</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Products</TooltipContent>
-            </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href="/discounts"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                      prefetch={false}
+                    >
+                      <TagIcon className="mr-1.5 h-4 w-4" />
+                      <span className="sr-only">Discounts</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Discounts</TooltipContent>
+                </Tooltip>
+              </>
+            )}
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/categories"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <ListIcon className="h-5 w-5" />
-                  <span className="sr-only">Categories</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Categories</TooltipContent>
-            </Tooltip>
-          </>
-        )}
-      </TooltipProvider>
-    </nav>
+            {(role === "admin" || role === "staff") && (
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href="/products"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                      prefetch={false}
+                    >
+                      <PackageIcon className="h-5 w-5" />
+                      <span className="sr-only">Products</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Products</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href="/categories"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                      prefetch={false}
+                    >
+                      <ListIcon className="h-5 w-5" />
+                      <span className="sr-only">Categories</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Categories</TooltipContent>
+                </Tooltip>
+              </>
+            )}
+          </TooltipProvider>
+        </nav>
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
           <TooltipProvider>
             <Tooltip>
@@ -216,7 +258,7 @@ export function Payments() {
                   <UsersIcon className="h-5 w-5" />
                   Users
                 </Link>
-                
+
                 <Link
                   href="/products"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
@@ -241,7 +283,7 @@ export function Payments() {
                   <CreditCardIcon className="h-5 w-5" />
                   Payments
                 </Link>
-                
+
                 <Link
                   href="/shipping"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
@@ -250,7 +292,7 @@ export function Payments() {
                   <TruckIcon className="h-5 w-5" />
                   Shipping
                 </Link>
-                 
+
               </nav>
             </SheetContent>
           </Sheet>
@@ -291,17 +333,17 @@ export function Payments() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>{username? username:"My Account"}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
         <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-          
+
           {/* <Card x-chunk="dashboard-06-chunk-0" /> */}
           <Card className="sm:col-span-2">
             <CardHeader className="pb-3">
@@ -377,7 +419,7 @@ export function Payments() {
               </Table>
             </CardContent>
             <CardFooter className="flex ">
-              
+
               <Pagination>
                 <PaginationContent>
                   <PaginationItem>
@@ -408,7 +450,7 @@ export function Payments() {
   )
 }
 
- 
+
 
 
 function CreditCardIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
@@ -611,7 +653,7 @@ function ShoppingCartIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElemen
 }
 
 
- 
+
 
 
 function TruckIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {

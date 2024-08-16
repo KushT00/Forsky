@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
+import { jwtDecode } from "jwt-decode";
 
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table"
 import {
@@ -29,6 +30,7 @@ import {
 } from "@/components/ui/pagination"
 import { Dialog, DialogContent, DialogFooter, DialogHeader } from "../ui/dialog"
 import { Label } from "../ui/label"
+import { useNavigate } from "react-router-dom"
 
 
 // Define the User type
@@ -185,6 +187,47 @@ export function Users() {
       setRole(storedRole);
     }, []);
   
+    const navigate = useNavigate(); // Updated hook
+
+    const handleLogout = () => {
+      // Remove role and token from localStorage
+      localStorage.removeItem('role');
+      localStorage.removeItem('token');
+  
+      // Optionally, redirect to login page
+      navigate('/login'); // Updated function
+  
+    };
+
+    
+    const [username, setUsername] = useState();
+    
+    useEffect(() => {
+      const fetchUserData = async (user_id: string) => {
+        // console.log(user_id)
+        try {
+          const response = await fetch(`http://localhost:3000/api/users/${user_id}`);
+          if (response.ok) {
+            const data = await response.json();
+            setUsername(data.name);
+          } else {
+            console.error("Failed to fetch user data.");
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      };
+      // console.log(username)
+  
+      const token = localStorage.getItem('token');
+      if (token) {
+        const decodedToken= jwtDecode(token);
+        const user_id = decodedToken.user_id;
+        fetchUserData(user_id);
+      } else {
+        console.log("No token found in local storage.");
+      }
+    }, []);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -206,8 +249,7 @@ export function Users() {
               <TooltipTrigger asChild>
                 <Link
                   href="/dashboard"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"                  prefetch={false}
                 >
                   <LayoutGridIcon className="h-5 w-5" />
                   <span className="sr-only">Overview</span>
@@ -234,7 +276,7 @@ export function Users() {
               <TooltipTrigger asChild>
                 <Link
                   href="/users"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                   prefetch={false}
                 >
                   <UsersIcon className="h-5 w-5" />
@@ -467,12 +509,12 @@ export function Users() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>{username? username: "My account"}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>

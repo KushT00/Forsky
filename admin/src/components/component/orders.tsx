@@ -17,6 +17,8 @@ import { Pagination, PaginationContent, PaginationItem } from "../ui/pagination"
 import { Progress } from "@radix-ui/react-progress"
 // import { Badge } from "@/components/ui/badge"
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table"
+import { useNavigate } from "react-router-dom"
+import { jwtDecode } from "jwt-decode";
 
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -83,6 +85,47 @@ export function Orders() {
     setRole(storedRole);
   }, []);
 
+  const navigate = useNavigate(); // Updated hook
+
+  const handleLogout = () => {
+    // Remove role and token from localStorage
+    localStorage.removeItem('role');
+    localStorage.removeItem('token');
+
+    // Optionally, redirect to login page
+    navigate('/login'); // Updated function
+
+  };
+
+  
+  const [username, setUsername] = useState();
+    
+  useEffect(() => {
+    const fetchUserData = async (user_id: string) => {
+      // console.log(user_id)
+      try {
+        const response = await fetch(`http://localhost:3000/api/users/${user_id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setUsername(data.name);
+        } else {
+          console.error("Failed to fetch user data.");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+    // console.log(username)
+
+    const token = localStorage.getItem('token');
+    if (token) {
+      const decodedToken= jwtDecode(token);
+      const user_id = decodedToken.user_id;
+      fetchUserData(user_id);
+    } else {
+      console.log("No token found in local storage.");
+    }
+  }, []);
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
@@ -103,7 +146,7 @@ export function Orders() {
               <TooltipTrigger asChild>
                 <Link
                   href="/dashboard"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                   prefetch={false}
                 >
                   <LayoutGridIcon className="h-5 w-5" />
@@ -117,7 +160,7 @@ export function Orders() {
               <TooltipTrigger asChild>
                 <Link
                   href="/orders"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                   prefetch={false}
                 >
                   <ShoppingCartIcon className="h-5 w-5" />
@@ -350,12 +393,12 @@ export function Orders() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>{username? username:"My Accoun"}t</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>

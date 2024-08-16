@@ -14,6 +14,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table"
 import { ListFilter, PlusCircle, MoreHorizontal, File, FilePenIcon, TrashIcon, TagIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { jwtDecode } from "jwt-decode";
+
 
 import {
   Pagination,
@@ -31,6 +33,7 @@ import {
 
 } from "@/components/ui/dialog"
 import { Skeleton } from "../ui/skeleton"
+import { useNavigate } from "react-router-dom"
 // Define the Diamond type
 interface Diamonds {
   diamond_id: number;
@@ -324,19 +327,70 @@ export function Products() {
       setImageSrc(imageUrl);
     }
   };
+  const [role, setRole] = useState<string | null>(null);
+  
+  useEffect(() => {
+    // Retrieve the role from local storage
+    const storedRole = localStorage.getItem("role");
+    setRole(storedRole);
+  }, []);
+
+  const navigate = useNavigate(); // Updated hook
+
+  const handleLogout = () => {
+    // Remove role and token from localStorage
+    localStorage.removeItem('role');
+    localStorage.removeItem('token');
+
+    // Optionally, redirect to login page
+    navigate('/login'); // Updated function
+
+  };
+  
+  const [username, setUsername] = useState();
+    
+  useEffect(() => {
+    const fetchUserData = async (user_id: string) => {
+      // console.log(user_id)
+      try {
+        const response = await fetch(`http://localhost:3000/api/users/${user_id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setUsername(data.name);
+        } else {
+          console.error("Failed to fetch user data.");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+    // console.log(username)
+
+    const token = localStorage.getItem('token');
+    if (token) {
+      const decodedToken= jwtDecode(token);
+      const user_id = decodedToken.user_id;
+      fetchUserData(user_id);
+    } else {
+      console.log("No token found in local storage.");
+    }
+  }, []);
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
-        <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
-          <TooltipProvider>
-            <Link
-              href=""
-              className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
-              prefetch={false}
-            >
-              <Package2Icon className="h-4 w-4 transition-all group-hover:scale-110" />
-              <span className="sr-only">Acme Inc</span>
-            </Link>
+      <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
+      <TooltipProvider>
+        <Link
+          href=""
+          className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
+          prefetch={false}
+        >
+          <Package2Icon className="h-4 w-4 transition-all group-hover:scale-110" />
+          <span className="sr-only">Acme Inc</span>
+        </Link>
+        
+        {role === "admin" && (
+          <>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -350,6 +404,7 @@ export function Products() {
               </TooltipTrigger>
               <TooltipContent side="right">Overview</TooltipContent>
             </Tooltip>
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -377,32 +432,7 @@ export function Products() {
               </TooltipTrigger>
               <TooltipContent side="right">Users</TooltipContent>
             </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/products"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <PackageIcon className="h-5 w-5" />
-                  <span className="sr-only">Products</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Products</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/categories"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <ListIcon className="h-5 w-5" />
-                  <span className="sr-only">Categories</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Categories</TooltipContent>
-            </Tooltip>
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -430,6 +460,7 @@ export function Products() {
               </TooltipTrigger>
               <TooltipContent side="right">Shipping</TooltipContent>
             </Tooltip>
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -437,16 +468,49 @@ export function Products() {
                   className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                   prefetch={false}
                 >
-                  {/* <TruckIcon className="h-5 w-5" /> */}
-                  <TagIcon className="mr-1.5 h-4 w-4"/>
+                  <TagIcon className="mr-1.5 h-4 w-4" />
                   <span className="sr-only">Discounts</span>
                 </Link>
               </TooltipTrigger>
               <TooltipContent side="right">Discounts</TooltipContent>
             </Tooltip>
+          </>
+        )}
 
-          </TooltipProvider>
-        </nav>
+        {(role === "admin" || role === "staff") && (
+          <>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/products"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+
+                  prefetch={false}
+                >
+                  <PackageIcon className="h-5 w-5" />
+                  <span className="sr-only">Products</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Products</TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/categories"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  prefetch={false}
+                >
+                  <ListIcon className="h-5 w-5" />
+                  <span className="sr-only">Categories</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Categories</TooltipContent>
+            </Tooltip>
+          </>
+        )}
+      </TooltipProvider>
+    </nav>
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
           <TooltipProvider>
             <Tooltip>
@@ -579,12 +643,12 @@ export function Products() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>{username? username:"My Account"}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>

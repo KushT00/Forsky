@@ -10,6 +10,11 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { SVGProps, useEffect, useState } from "react"
 import { JSX } from "react/jsx-runtime"
 import { TagIcon } from "lucide-react"
+import { useNavigate } from "react-router-dom"
+import { jwtDecode } from "jwt-decode";
+
+
+
 export function Shipping() {
   const [role, setRole] = useState<string | null>(null);
   
@@ -17,6 +22,46 @@ export function Shipping() {
     // Retrieve the role from local storage
     const storedRole = localStorage.getItem("role");
     setRole(storedRole);
+  }, []);
+  const navigate = useNavigate(); // Updated hook
+
+  const handleLogout = () => {
+    // Remove role and token from localStorage
+    localStorage.removeItem('role');
+    localStorage.removeItem('token');
+
+    // Optionally, redirect to login page
+    navigate('/login'); // Updated function
+
+  };
+  
+  const [username, setUsername] = useState();
+    
+  useEffect(() => {
+    const fetchUserData = async (user_id: string) => {
+      // console.log(user_id)
+      try {
+        const response = await fetch(`http://localhost:3000/api/users/${user_id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setUsername(data.name);
+        } else {
+          console.error("Failed to fetch user data.");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+    // console.log(username)
+
+    const token = localStorage.getItem('token');
+    if (token) {
+      const decodedToken= jwtDecode(token);
+      const user_id = decodedToken.user_id;
+      fetchUserData(user_id);
+    } else {
+      console.log("No token found in local storage.");
+    }
   }, []);
 
   return (
@@ -39,7 +84,7 @@ export function Shipping() {
               <TooltipTrigger asChild>
                 <Link
                   href="/dashboard"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                   prefetch={false}
                 >
                   <LayoutGridIcon className="h-5 w-5" />
@@ -95,7 +140,7 @@ export function Shipping() {
               <TooltipTrigger asChild>
                 <Link
                   href="/shipping"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                   prefetch={false}
                 >
                   <TruckIcon className="h-5 w-5" />
@@ -286,12 +331,12 @@ export function Shipping() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>{username? username:"My Account"}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>

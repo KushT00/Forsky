@@ -23,6 +23,19 @@ router.post('/users', addUsers);
 router.post('/login', loginUser);
 router.put('/users/:user_id',putUser);
 router.delete('/users/:user_id', delUser);
+// Get a single user by ID
+router.get('/users/:user_id', async (req, res) => {
+    const { user_id } = req.params;
+    try {
+      const user = await pool.query('SELECT * FROM users WHERE user_id = $1', [user_id]);
+      if (user.rows.length === 0) {
+        return res.status(404).send('User not found');
+      }
+      res.json(user.rows[0]);
+    } catch (err) {
+      res.status(500).send(err.message);
+    }
+  });
   
 
 // products
