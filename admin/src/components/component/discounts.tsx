@@ -1,77 +1,151 @@
-
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Key, useEffect, useState } from "react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
+import { Tabs } from "@radix-ui/react-tabs";
+import { PlusIcon, FilePenIcon, TrashIcon, SearchIcon, TruckIcon, CreditCardIcon, LayoutGridIcon, ListIcon, MenuIcon, Package2Icon, PackageIcon, ShoppingCartIcon, UsersIcon, SettingsIcon, TagIcon } from "lucide-react";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "../ui/textarea";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "../ui/breadcrumb";
+import Link from "next/link";
+import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
-import Link from "next/link"
-import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet"
-import { Button } from "@/components/ui/button"
-import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from "@/components/ui/breadcrumb"
-import { Input } from "@/components/ui/input"
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from "@/components/ui/dropdown-menu"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
-import { SVGProps, useEffect, useState } from "react"
-import { JSX } from "react/jsx-runtime"
-import { TagIcon } from "lucide-react"
 
-interface User {
-  user_id: number;
-  
+
+// Define the discount interface
+interface DISCOUNTS {
+  discount_id: Key;
+  code: string;
+  description: string;
+  discount_percentage: number;
 }
-export function Dashboard() {
-  const [users, setUsers] = useState<User[]>([]); // Use the User type for state
+
+export function Discounts() {
+  const [discounts, setDiscounts] = useState<DISCOUNTS[]>([]);
+  const [openAddDialog, setOpenAddDialog] = useState(false);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [newDiscount, setNewDiscount] = useState({ code: "", discount_percentage: "", description: "" });
+  const [editDiscount, setEditDiscount] = useState<DISCOUNTS | null>(null);
 
   useEffect(() => {
-    // Fetch users from the API
-    fetch('http://localhost:3000/api/users')
-      .then(response => response.json())
-      .then(data => setUsers(data))
-      .catch(error => console.error('Error fetching users:', error));
-  }, []);
-
-  const [products, setProducts] = useState<User[]>([]); // Use the User type for state
-
-  useEffect(() => {
-    // Fetch users from the API
-    fetch('http://localhost:3000/api/products')
-      .then(response => response.json())
-      .then(data => setProducts(data))
-      .catch(error => console.error('Error fetching users:', error));
+    fetch("http://localhost:3000/api/discounts")
+      .then((response) => response.json())
+      .then((data) => setDiscounts(data))
+      .catch((error) => console.error("Error fetching discounts:", error));
   }, []);
 
   
-  const [diamonds, setDiamonds] = useState<User[]>([]); // Use the User type for state
 
-  useEffect(() => {
-    // Fetch users from the API
-    fetch('http://localhost:3000/api/diamonds')
-      .then(response => response.json())
-      .then(data => setDiamonds(data))
-      .catch(error => console.error('Error fetching users:', error));
-  }, []);
-  const [plates, setPlates] = useState([]); // Use the User type for state
+const handleAddDiscount = () => {
+    fetch('http://localhost:3000/api/discounts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        code: newDiscount.code,
+        discount_percentage: Number(newDiscount.discount_percentage), // Ensure percentage is a number
+        description: newDiscount.description
+      }),
+    })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(errorData => {
+            throw new Error(`Failed to add discount: ${errorData.message || 'Unknown error'}`);
+          });
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data && data.discount_id) {
+          setDiscounts([...discounts, data]); // Add the new discount to the list
+          setOpenAddDialog(false);
+        } else {
+          console.error('Invalid data received:', data);
+        }
+      })
+      .catch(error => {
+        console.error('Error adding discount:', error);
+        // Optionally show an error message to the user
+        alert('An error occurred while adding the discount. Please try again.');
+      });
+  };
 
-  useEffect(() => {
-    // Fetch users from the API
-    fetch('http://localhost:3000/api/plates')
-      .then(response => response.json())
-      .then(data => setPlates(data))
-      .catch(error => console.error('Error fetching plates:', error));
-  }, []);
+  const handleEditDiscount = () => {
+    if (editDiscount === null) {
+      console.error('No discount data available to edit');
+      return;
+    }
+  
+    fetch(`http://localhost:3000/api/discounts/${editDiscount.discount_id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        code: editDiscount.code,
+        discount_percentage: Number(editDiscount.discount_percentage), // Ensure percentage is a number
+        description: editDiscount.description
+      }),
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to update discount');
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Ensure that data received is valid and matches DISCOUNTS type
+        if (data && data.discount_id) {
+          // Update the state with the edited discount
+          setDiscounts(discounts.map(discount => 
+            discount.discount_id === editDiscount.discount_id ? data : discount
+          ));
+          setOpenEditDialog(false);
+        } else {
+          console.error('Invalid data received:', data);
+        }
+      })
+      .catch(error => console.error('Error updating discount:', error));
+  };
+  
+  
+  
 
+  const handleDeleteDiscount = (discount_id: Key) => {
+    if (window.confirm("Are you sure you want to delete this discount?")) {
+      fetch(`http://localhost:3000/api/discounts/${discount_id}`, {
+        method: "DELETE",
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Failed to delete discount");
+          }
+          setDiscounts(discounts.filter((discount) => discount.discount_id !== discount_id));
+        })
+        .catch((error) => console.error("Error deleting discount:", error));
+    }
+  };
 
-  const Totalplates= plates.length;
-  const Totaluser= users.length;
-  const Totalproducts= products.length;
-  const Totaldiamonds= diamonds.length;
+  const openEditDialogWithDiscount = (discount: DISCOUNTS) => {
+    setEditDiscount(discount);
+    setOpenEditDialog(true);
+  };
   const [role, setRole] = useState<string | null>(null);
   
-    useEffect(() => {
-      // Retrieve the role from local storage
-      const storedRole = localStorage.getItem("role");
-      setRole(storedRole);
-    }, []);
-  
+  useEffect(() => {
+    // Retrieve the role from local storage
+    const storedRole = localStorage.getItem("role");
+    setRole(storedRole);
+  }, []);
+
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
+      {/* Sidebar and header code */}
+
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
       <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
       <TooltipProvider>
@@ -223,8 +297,10 @@ export function Dashboard() {
           </TooltipProvider>
         </nav>
       </aside>
+
       <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+
+      <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
           <Sheet>
             <SheetTrigger asChild>
               <Button size="icon" variant="outline" className="sm:hidden">
@@ -262,7 +338,7 @@ export function Dashboard() {
                   <UsersIcon className="h-5 w-5" />
                   Users
                 </Link>
-                
+
                 <Link
                   href="/products"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
@@ -287,7 +363,7 @@ export function Dashboard() {
                   <CreditCardIcon className="h-5 w-5" />
                   Payments
                 </Link>
-                 
+
                 <Link
                   href="/shipping"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
@@ -296,7 +372,7 @@ export function Dashboard() {
                   <TruckIcon className="h-5 w-5" />
                   Shipping
                 </Link>
-                 
+
               </nav>
             </SheetContent>
           </Sheet>
@@ -346,309 +422,124 @@ export function Dashboard() {
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-          <div className="grid auto-rows-max items-start gap-4 md:gap-8">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle>Total Sales</CardTitle>
-                  <CardDescription>The total revenue generated from all sales.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-4xl font-bold">$250,000</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle>Total Products</CardTitle>
-                  <CardDescription>The total number of products in the inventory.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-4xl font-bold" >{Totalproducts}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle>Total Diamonds</CardTitle>
-                  <CardDescription>The total number of diamonds listed.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-4xl font-bold" >{Totaldiamonds}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle>Total Users</CardTitle>
-                  <CardDescription>Total users registered</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-4xl font-bold">{Totaluser}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle>Total Plates</CardTitle>
-                  <CardDescription>Total plates listed</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-4xl font-bold">{Totalplates}</div>
-                </CardContent>
-              </Card>
+      <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+        <Tabs defaultValue="all" />
+        <Card x-chunk="dashboard-06-chunk-1">
+          <CardHeader>
+            <CardTitle>Discounts</CardTitle>
+            <CardDescription>Manage your discounts here.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-medium">Discounts</h2>
+                <Button size="sm" onClick={() => setOpenAddDialog(true)}>
+                  <PlusIcon className="h-4 w-4 mr-2" />
+                  Add Discount
+                </Button>
+              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Discount ID</TableHead>
+                    <TableHead>Code</TableHead>
+                   
+                    <TableHead>Discount Percentage</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {discounts.map((dis) => (
+                    <TableRow key={dis.discount_id}>
+                      {/* <TableCell>{dis.discount_id}</TableCell> */}
+                      <TableCell className="font-medium">{dis.code}</TableCell>
+                      <TableCell>{dis.description}</TableCell>
+                      <TableCell>{dis.discount_percentage}%</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button size="icon" variant="ghost" onClick={() => openEditDialogWithDiscount(dis)}>
+                            <FilePenIcon className="h-4 w-4" />
+                            <span className="sr-only">Edit</span>
+                          </Button>
+                          <Button size="icon" variant="ghost" onClick={() => handleDeleteDiscount(dis.discount_id)}>
+                            <TrashIcon className="h-4 w-4" />
+                            <span className="sr-only">Delete</span>
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
-          </div>
-        </main>
+          </CardContent>
+        </Card>
+
+        {/* Add Discount Dialog */}
+        <Dialog open={openAddDialog} onOpenChange={setOpenAddDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Discount</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Input
+                placeholder="Discount Code"
+                value={newDiscount.code}
+                onChange={(e) => setNewDiscount({ ...newDiscount, code: e.target.value })}
+              />
+              <Input
+                type="number"
+                placeholder="Discount Percentage"
+                value={newDiscount.discount_percentage}
+                onChange={(e) => setNewDiscount({ ...newDiscount, discount_percentage: e.target.value })}
+              />
+              <Textarea
+                placeholder="Discount Description"
+                value={newDiscount.description}
+                onChange={(e) => setNewDiscount({ ...newDiscount, description: e.target.value })}
+              />
+            </div>
+            <DialogFooter>
+              <Button onClick={handleAddDiscount}>Add</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Discount Dialog */}
+        <Dialog open={openEditDialog} onOpenChange={setOpenEditDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Discount</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Input
+                placeholder="Discount Code"
+                value={editDiscount?.code || ""}
+                onChange={(e) => setEditDiscount((prev) => prev ? { ...prev, code: e.target.value } : null)}
+              />
+              <Input
+                type="number"
+                placeholder="Discount Percentage"
+                value={editDiscount?.discount_percentage || ""}
+                onChange={(e) => setEditDiscount(prev => prev ? { ...prev, discount_percentage: e.target.value } : null)}
+              />
+              <Textarea
+                placeholder="Discount Description"
+                value={editDiscount?.description || ""}
+                onChange={(e) => setEditDiscount((prev) => prev ? { ...prev, description: e.target.value } : null)}
+              />
+            </div>
+            <DialogFooter>
+              <Button onClick={handleEditDiscount}>Save Changes</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </main>
       </div>
     </div>
-  )
+  );
 }
 
 
 
-function CreditCardIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect width="20" height="14" x="2" y="5" rx="2" />
-      <line x1="2" x2="22" y1="10" y2="10" />
-    </svg>
-  )
-}
 
-
-function LayoutGridIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect width="7" height="7" x="3" y="3" rx="1" />
-      <rect width="7" height="7" x="14" y="3" rx="1" />
-      <rect width="7" height="7" x="14" y="14" rx="1" />
-      <rect width="7" height="7" x="3" y="14" rx="1" />
-    </svg>
-  )
-}
-
-
-function ListIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="8" x2="21" y1="6" y2="6" />
-      <line x1="8" x2="21" y1="12" y2="12" />
-      <line x1="8" x2="21" y1="18" y2="18" />
-      <line x1="3" x2="3.01" y1="6" y2="6" />
-      <line x1="3" x2="3.01" y1="12" y2="12" />
-      <line x1="3" x2="3.01" y1="18" y2="18" />
-    </svg>
-  )
-}
-
-
-function MenuIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="4" x2="20" y1="12" y2="12" />
-      <line x1="4" x2="20" y1="6" y2="6" />
-      <line x1="4" x2="20" y1="18" y2="18" />
-    </svg>
-  )
-}
-
-
-function Package2Icon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z" />
-      <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9" />
-      <path d="M12 3v6" />
-    </svg>
-  )
-}
-
-
-function PackageIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m7.5 4.27 9 5.15" />
-      <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
-      <path d="m3.3 7 8.7 5 8.7-5" />
-      <path d="M12 22V12" />
-    </svg>
-  )
-}
-
-
-function SearchIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.3-4.3" />
-    </svg>
-  )
-}
-
-
-function SettingsIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  )
-}
-
-
-function ShoppingCartIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="8" cy="21" r="1" />
-      <circle cx="19" cy="21" r="1" />
-      <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-    </svg>
-  )
-}
-
-
- 
-
-
-function TruckIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" />
-      <path d="M15 18H9" />
-      <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14" />
-      <circle cx="17" cy="18" r="2" />
-      <circle cx="7" cy="18" r="2" />
-    </svg>
-  )
-}
-
-
-function UsersIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  )
-}

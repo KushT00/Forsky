@@ -8,7 +8,7 @@ import Link from "next/link"
 import { SVGProps, useEffect, useState } from "react"
 import { JSX } from "react/jsx-runtime"
 // import { Tabs, TabsList, TabsTrigger, TabsContent } from "@radix-ui/react-tabs"
-import { ListFilterIcon, FileIcon, CirclePlusIcon, FilePenIcon, TrashIcon } from "lucide-react"
+import { ListFilterIcon, FileIcon, CirclePlusIcon, FilePenIcon, TrashIcon, TagIcon } from "lucide-react"
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from "@/components/ui/breadcrumb"
@@ -27,6 +27,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
+import { Dialog, DialogContent, DialogFooter, DialogHeader } from "../ui/dialog"
+import { Label } from "../ui/label"
 
 
 // Define the User type
@@ -64,7 +66,11 @@ export function Users() {
 
   // Calculate total pages
   const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
-  const totalusers=Math.ceil(users.length/ITEMS_PER_PAGE);
+  const totalusers = Math.ceil(users.length / ITEMS_PER_PAGE);
+
+
+  const [openAddUserDialog, setOpenAddUserDialog] = useState(false);
+  const [newUser, setNewUser] = useState({ name: '', email: '', password: '', confirmPassword: '', role: 'customer' });
 
   // Handle page change
   const handlePageChange = (page: number) => {
@@ -73,31 +79,134 @@ export function Users() {
     }
   };
 
-   // Handle page change
-   const handlePageChange2 = (page: number) => {
+  // Handle page change
+  const handlePageChange2 = (page: number) => {
     if (page >= 1 && page <= totalusers) {
       setCurrentPage(page);
     }
   };
 
+  const handleInputChange = (event: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setNewUser(prevUser => ({
+      ...prevUser,
+      [name]: value,
+    }));
+  };
+  
+
+  const handleSubmit = () => {
+    if (newUser.password !== newUser.confirmPassword) {
+      alert('Passwords do not match!');
+      return;
+    }
+
+    fetch('http://localhost:3000/api/users', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: newUser.name,
+        email: newUser.email,
+        password: newUser.password,
+        role: newUser.role,
+      }),
+    })
+      .then(response => response.json())
+      .then(data => {
+        setUsers([...users, data]); // Add the new user to the list
+        setOpenAddUserDialog(false); // Close the dialog
+        setNewUser({ name: '', email: '', password: '', confirmPassword: '', role: 'customer' }); // Reset the form
+      })
+      .catch(error => console.error('Error adding user:', error));
+  };
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [openEditUserDialog, setOpenEditUserDialog] = useState(false);
+
+  const handleEditClick = (user: User) => {
+    setSelectedUser(user);
+    setNewUser({ name: user.name, email: user.email, password: '', confirmPassword: '', role: user.role });
+    setOpenEditUserDialog(true);
+  };
+
+  const handleEditSubmit = () => {
+    if (!selectedUser) return;
+
+    fetch(`http://localhost:3000/api/users/${selectedUser.user_id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+      }),
+    })
+      .then(response => response.json())
+      .then(updatedUser => {
+        setUsers(users.map(user => (user.user_id === updatedUser.user_id ? updatedUser : user)));
+        setOpenEditUserDialog(false);
+        setSelectedUser(null);
+        setNewUser({ name: '', email: '', password: '', confirmPassword: '', role: 'customer' });
+      })
+      .catch(error => console.error('Error updating user:', error));
+  };
+
+  const handleDelete = (userId: number) => {
+    // Show confirmation alert
+    const confirmed = window.confirm('Are you sure you want to delete this user?');
+  
+    if (confirmed) {
+      fetch(`http://localhost:3000/api/users/${userId}`, {
+        method: 'DELETE',
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to delete user');
+          }
+          // No need to return response.json() unless your API sends a response body
+        })
+        .then(() => {
+          // Update the state to remove the deleted user immediately
+          setUsers(prevUsers => prevUsers.filter(user => user.user_id !== userId));
+        })
+        .catch(error => console.error('Error deleting user:', error));
+    }
+  };
+  
+ 
+    const [role, setRole] = useState<string | null>(null);
+  
+    useEffect(() => {
+      // Retrieve the role from local storage
+      const storedRole = localStorage.getItem("role");
+      setRole(storedRole);
+    }, []);
+  
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
-        <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
-          <TooltipProvider>
-            <Link
-              href=""
-              className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
-              prefetch={false}
-            >
-              <Package2Icon className="h-4 w-4 transition-all group-hover:scale-110" />
-              <span className="sr-only">Acme Inc</span>
-            </Link>
+      <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
+      <TooltipProvider>
+        <Link
+          href=""
+          className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
+          prefetch={false}
+        >
+          <Package2Icon className="h-4 w-4 transition-all group-hover:scale-110" />
+          <span className="sr-only">Acme Inc</span>
+        </Link>
+        
+        {role === "admin" && (
+          <>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
                   href="/dashboard"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg  text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                   prefetch={false}
                 >
                   <LayoutGridIcon className="h-5 w-5" />
@@ -106,6 +215,7 @@ export function Users() {
               </TooltipTrigger>
               <TooltipContent side="right">Overview</TooltipContent>
             </Tooltip>
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -124,7 +234,7 @@ export function Users() {
               <TooltipTrigger asChild>
                 <Link
                   href="/users"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                   prefetch={false}
                 >
                   <UsersIcon className="h-5 w-5" />
@@ -133,32 +243,7 @@ export function Users() {
               </TooltipTrigger>
               <TooltipContent side="right">Users</TooltipContent>
             </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/products"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <PackageIcon className="h-5 w-5" />
-                  <span className="sr-only">Products</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Products</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/categories"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <ListIcon className="h-5 w-5" />
-                  <span className="sr-only">Categories</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Categories</TooltipContent>
-            </Tooltip>
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -187,8 +272,55 @@ export function Users() {
               <TooltipContent side="right">Shipping</TooltipContent>
             </Tooltip>
 
-          </TooltipProvider>
-        </nav>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/discounts"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  prefetch={false}
+                >
+                  <TagIcon className="mr-1.5 h-4 w-4" />
+                  <span className="sr-only">Discounts</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Discounts</TooltipContent>
+            </Tooltip>
+          </>
+        )}
+
+        {(role === "admin" || role === "staff") && (
+          <>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/products"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  prefetch={false}
+                >
+                  <PackageIcon className="h-5 w-5" />
+                  <span className="sr-only">Products</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Products</TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/categories"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  prefetch={false}
+                >
+                  <ListIcon className="h-5 w-5" />
+                  <span className="sr-only">Categories</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Categories</TooltipContent>
+            </Tooltip>
+          </>
+        )}
+      </TooltipProvider>
+    </nav>
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
           <TooltipProvider>
             <Tooltip>
@@ -373,10 +505,15 @@ export function Users() {
                   <FileIcon className="h-3.5 w-3.5" />
                   <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">Export</span>
                 </Button>
-                <Button size="sm" className="h-8 gap-1">
+                <Button
+                  size="sm"
+                  className="h-8 gap-1"
+                  onClick={() => setOpenAddUserDialog(true)}  // Open the dialog on click
+                >
                   <CirclePlusIcon className="h-3.5 w-3.5" />
                   <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">Add User</span>
                 </Button>
+
               </div>
             </div>
             <TabsContent value="all">
@@ -405,11 +542,16 @@ export function Users() {
                           <TableCell className="hidden sm:table-cell">{user.role}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              <Button size="icon" variant="ghost">
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => handleEditClick(user)} // Add this onClick event
+                              >
                                 <FilePenIcon className="h-4 w-4" />
                                 <span className="sr-only">Edit</span>
                               </Button>
-                              <Button size="icon" variant="ghost">
+
+                              <Button size="icon" variant="ghost" onClick={() => handleDelete(user.user_id)}>
                                 <TrashIcon className="h-4 w-4" />
                                 <span className="sr-only">Delete</span>
                               </Button>
@@ -419,6 +561,8 @@ export function Users() {
                       ))}
                     </TableBody>
                   </Table>
+
+
                 </CardContent>
               </Card>
               <Pagination>
@@ -447,7 +591,7 @@ export function Users() {
             <TabsContent value="staff">
               <Card x-chunk="dashboard-06-chunk-0">
                 <CardHeader>
-                  <CardTitle>Colleague</CardTitle>
+                  <CardTitle>Staff</CardTitle>
                   <CardDescription>Manage your users and view their information.</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -470,11 +614,12 @@ export function Users() {
                           <TableCell className="hidden sm:table-cell">{user.role}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              <Button size="icon" variant="ghost">
+                              <Button size="icon" variant="ghost"
+                              onClick={() => handleEditClick(user)}>
                                 <FilePenIcon className="h-4 w-4" />
                                 <span className="sr-only">Edit</span>
                               </Button>
-                              <Button size="icon" variant="ghost">
+                              <Button size="icon" variant="ghost" onClick={() => handleDelete(user.user_id)}>
                                 <TrashIcon className="h-4 w-4" />
                                 <span className="sr-only">Delete</span>
                               </Button>
@@ -516,7 +661,7 @@ export function Users() {
                   <CardDescription>Manage your users and view their information.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                <Table>
+                  <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead className="hidden sm:table-cell">ID</TableHead>
@@ -535,11 +680,12 @@ export function Users() {
                           <TableCell className="hidden sm:table-cell">{user.role}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              <Button size="icon" variant="ghost">
+                              <Button size="icon" variant="ghost"
+                              onClick={() => handleEditClick(user)}>
                                 <FilePenIcon className="h-4 w-4" />
                                 <span className="sr-only">Edit</span>
                               </Button>
-                              <Button size="icon" variant="ghost">
+                              <Button size="icon" variant="ghost" onClick={() => handleDelete(user.user_id)}>
                                 <TrashIcon className="h-4 w-4" />
                                 <span className="sr-only">Delete</span>
                               </Button>
@@ -552,6 +698,86 @@ export function Users() {
                 </CardContent>
               </Card>
             </TabsContent>
+            <Dialog open={openAddUserDialog} onOpenChange={setOpenAddUserDialog}>
+
+              <DialogContent>
+                <DialogHeader>Add New User</DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="name">Name</Label>
+                    <Input id="name" name="name" value={newUser.name} onChange={handleInputChange} required />
+                  </div>
+                  <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input id="email" name="email" value={newUser.email} onChange={handleInputChange} required />
+                  </div>
+                  <div>
+                    <Label htmlFor="password">Password</Label>
+                    <Input type="password" id="password" name="password" value={newUser.password} onChange={handleInputChange} required />
+                  </div>
+                  <div>
+                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <Input type="password" id="confirmPassword" name="confirmPassword" value={newUser.confirmPassword} onChange={handleInputChange} required />
+                  </div>
+                  <div>
+                    <Label htmlFor="role">Role</Label>
+
+
+                    <select
+                      className="border  border-gray-300 rounded-md p-2 w-full"
+                      value={newUser.role}
+                      onChange={() => handleInputChange} // Correctly passing the event handler
+                    >
+                      {/* Default empty option */}
+                      <option value="customer">customer</option>
+                      <option value="admin">admin</option>
+                      <option value="staff">staff</option>
+                      {/* Add more options as needed */}
+                    </select>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button onClick={handleSubmit}>Submit</Button>
+                  <Button variant="ghost" onClick={() => setOpenAddUserDialog(false)}>Cancel</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+
+            <Dialog open={openEditUserDialog} onOpenChange={setOpenEditUserDialog}>
+  <DialogContent>
+    <DialogHeader>Edit User</DialogHeader>
+    <div className="space-y-4">
+      <div>
+        <Label htmlFor="name">Name</Label>
+        <Input id="name" name="name" value={newUser.name} onChange={handleInputChange} required />
+      </div>
+      <div>
+        <Label htmlFor="email">Email</Label>
+        <Input id="email" name="email" value={newUser.email} onChange={handleInputChange} required />
+      </div>
+      <div>
+        <Label htmlFor="role">Role</Label>
+        <select
+          className="border border-gray-300 rounded-md p-2 w-full"
+          name="role"
+          value={newUser.role}
+          onChange={handleInputChange} // Correctly pass the event handler
+          required
+        >
+          <option value="customer">Customer</option>
+          <option value="admin">Admin</option>
+          <option value="staff">Staff</option>
+        </select>
+      </div>
+    </div>
+    <DialogFooter>
+      <Button onClick={handleEditSubmit}>Save Changes</Button>
+      <Button variant="ghost" onClick={() => setOpenEditUserDialog(false)}>Cancel</Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
           </Tabs>
         </main>
       </div>

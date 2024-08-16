@@ -6,19 +6,21 @@ const { fetchOrders } = require('../controllers/orderController');
 const { fetchCategory } = require('../controllers/categoryController');
 const { fetchDiamonds } = require('../controllers/diamondsController');
 const { fetchPlates} = require('../controllers/platesController');
-const {putUser, delUser}= require('../models/userModel');
+const {putUser, delUser, loginUser}= require('../models/userModel');
 const { addPlates, putPlates, delPlates } = require('../models/platesModel');
 const { addDiamonds, putDiamonds, delDiamonds } = require('../models/diamondsModel');
 const { postCategory, putCategory, delCategory } = require('../models/categoryModel');
+const { delOrder, putOrder, addOrder } = require('../models/orderModel');
+const { addProducts, putProducts, delProduct } = require('../models/productModel');
 
 const router = express.Router();
 const pool = require('../db');
-const { delOrder, putOrder, addOrder } = require('../models/orderModel');
-const { addProducts, putProducts, delProduct } = require('../models/productModel');
+const { fetchdiscounts, postdiscounts, putdiscounts, deldiscounts } = require('../models/discountModel');
 
 // users
 router.get('/users', fetchUsers);
 router.post('/users', addUsers);
+router.post('/login', loginUser);
 router.put('/users/:user_id',putUser);
 router.delete('/users/:user_id', delUser);
   
@@ -57,6 +59,10 @@ router.post('/plates', addPlates);
 router.put('/plates/:plate_id',putPlates);
 router.delete('/plates/:plate_id',delPlates);
   
-
+//Discounts
+router.get('/discounts', fetchdiscounts);
+router.post('/discounts', postdiscounts);
+router.put('/discounts/:discount_id',putdiscounts);
+router.delete('/discounts/:discount_id', deldiscounts);
 
 module.exports = router;

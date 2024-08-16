@@ -1,5 +1,7 @@
 // models/userModel.js
 const pool = require('../db');
+const jwt = require('jsonwebtoken');
+
 
 const getUsers = async () => {
   try {
@@ -35,18 +37,18 @@ const postUser = async (req, res) => {
     res.status(500).send(err.message);
   }
 };
-const putUser= async (req, res) => {
+const putUser = async (req, res) => {
   const { user_id } = req.params;
-  const { name, email } = req.body;
+  const { name, email, role } = req.body; // Include role in the destructuring
   try {
     const updatedUser = await pool.query(
-      'UPDATE users SET name = $1, email = $2 WHERE user_id = $3 RETURNING *',
-      [name, email, user_id]
+      'UPDATE users SET name = $1, email = $2, role = $3 WHERE user_id = $4 RETURNING *',
+      [name, email, role, user_id] // Include role in the parameters
     );
     if (updatedUser.rows.length === 0) {
       return res.status(404).send('User not found');
     }
-    res.json(updatedUser.rows[0]);
+    res.json(updatedUser.rows[0]); // Respond with the updated user
   } catch (err) {
     res.status(500).send(err.message);
   }
@@ -65,7 +67,39 @@ const delUser = async (req, res) => {
   } catch (err) {
     res.status(500).send(err.message);
   }
-}
+};
+
+// New login function
+const loginUser = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    // Find user by email
+    const userQuery = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    
+    if (userQuery.rows.length === 0) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    const user = userQuery.rows[0];
+
+    // Compare password with stored password
+    if (user.password !== password) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    // Create a JWT token
+    const token = jwt.sign({ user_id: user.user_id, role: user.role }, "forsky", {
+      expiresIn: '1h', // Set the token expiration time
+    });
+
+    // If valid, return user role and token
+    res.status(200).json({ role: user.role, token });
+    
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
 
 
-module.exports = { getUsers,postUser,putUser,delUser};
+module.exports = { getUsers, postUser, putUser, delUser, loginUser };

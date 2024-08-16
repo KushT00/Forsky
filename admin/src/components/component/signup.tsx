@@ -1,10 +1,74 @@
-
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import { useState } from 'react';
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+// import { useRouter } from 'next/router';
+import Link from "next/link";
+import { Navigate } from 'react-router-dom';
 
 export function Signup() {
+  const [formData, setFormData] = useState({
+    name: '',
+    
+    email: '',
+    password: '',
+    confirmpassword: '',
+  });
+
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [redirect, setRedirect] = useState(false); // State to handle redirect
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setFormData(prevData => ({
+      ...prevData,
+      [id]: value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    // Basic validation
+    if (formData.password !== formData.confirmpassword) {
+        setError('Passwords do not match');
+        return;
+    }
+
+    try {
+        const response = await fetch('http://localhost:3000/api/users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                ...formData,
+                role: 'customer',
+            }),
+        });
+
+        const responseData = await response.json();
+
+        if (!response.ok) {
+            // Use the error message from the API response
+            throw new Error(responseData.error || 'Failed to create user');
+        }
+
+        setSuccess('User created successfully');
+        setError('');
+        setRedirect(true); // Trigger redirect on success
+    } catch (err: unknown) {
+        setError(err.message || 'An error occurred');
+        setSuccess('');
+    }
+};
+
+  if (redirect) {
+    return <Navigate to="/" replace />; // Navigate to homepage on success
+  }
+
+
   return (
     <div className="grid w-full min-h-[100dvh] lg:grid-cols-2">
       <div className="flex items-center justify-center bg-gradient-to-br from-[#f1f5f9] to-[#e2e8f0] p-4 sm:p-8">
@@ -13,41 +77,67 @@ export function Signup() {
             <h1 className="text-xl font-bold">Sign Up for Diamond Delight</h1>
             {/* <p className="text-muted-foreground">Create your account to access our exquisite diamond collection.</p> */}
           </div>
-          <form className="mt-6 space-y-4">
-  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-    <div>
-      <Label htmlFor="name">Name</Label>
-      <Input id="name" type="text" placeholder="John Doe" required />
-    </div>
-    <div>
-      <Label htmlFor="phone">Phone Number</Label>
-      <Input id="phone" type="tel" placeholder="123-456-7890" required />
-    </div>
-  </div>
-  <div>
-    <Label htmlFor="email">Email</Label>
-    <Input id="email" type="email" placeholder="m@example.com" required />
-  </div>
-  <div>
-    <div className="flex items-center justify-between">
-      <Label htmlFor="password">Password</Label>
-    </div>
-    <Input id="password" type="password"  required />
-  </div>
-  <div>
-    <div className="flex items-center justify-between">
-      <Label htmlFor="password">Confirm Password</Label>
-    </div>
-    <Input id="confirmpassword" type="password" required />
-  </div>
-  <Button type="submit" className="w-full">
-    Sign Up
-  </Button>
-</form>
+          <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-1">
+              <div>
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="John Doe"
+                  required
+                  value={formData.name}
+                  onChange={handleChange}
+                />
+              </div>
+              
+            </div>
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="m@example.com"
+                required
+                value={formData.email}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+              </div>
+              <Input
+                id="password"
+                type="password"
+                required
+                value={formData.password}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="confirmpassword">Confirm Password</Label>
+              </div>
+              <Input
+                id="confirmpassword"
+                type="password"
+                required
+                value={formData.confirmpassword}
+                onChange={handleChange}
+              />
+            </div>
+            <Button type="submit" className="w-full">
+              Sign Up
+            </Button>
+          </form>
+
+          {error && <div className="mt-4 text-red-500">{error}</div>}
+          {success && <div className="mt-4 text-green-500">{success}</div>}
 
           <div className="mt-6 text-center text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link href="#" className="font-medium text-primary hover:underline" prefetch={false}>
+            <Link href="/login" className="font-medium text-primary hover:underline" prefetch={false}>
               Login
             </Link>
           </div>
@@ -55,5 +145,5 @@ export function Signup() {
       </div>
       <div className="hidden bg-[url('/diamonds.jpg')] bg-cover bg-center lg:block" />
     </div>
-  )
+  );
 }

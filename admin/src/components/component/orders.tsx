@@ -11,7 +11,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { SVGProps, useEffect, useState } from "react"
 import { JSX } from "react/jsx-runtime"
 import { Separator } from "@radix-ui/react-dropdown-menu"
-import { CopyIcon, MoveVerticalIcon, ChevronLeftIcon, ChevronRightIcon, FilePenIcon, TrashIcon } from "lucide-react"
+import { CopyIcon, MoveVerticalIcon, ChevronLeftIcon, ChevronRightIcon, FilePenIcon, TrashIcon, TagIcon } from "lucide-react"
 import { Pagination, PaginationContent, PaginationItem } from "../ui/pagination"
 // import { TableHeader, TableRow, TableHead, TableBody, TableCell } from "../ui/table"
 import { Progress } from "@radix-ui/react-progress"
@@ -75,24 +75,35 @@ export function Orders() {
   const handleRowClick = (order: Order) => {
     setSelectedOrder(order);
   };
+  const [role, setRole] = useState<string | null>(null);
+  
+  useEffect(() => {
+    // Retrieve the role from local storage
+    const storedRole = localStorage.getItem("role");
+    setRole(storedRole);
+  }, []);
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
-        <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
-          <TooltipProvider>
-            <Link
-              href=""
-              className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
-              prefetch={false}
-            >
-              <Package2Icon className="h-4 w-4 transition-all group-hover:scale-110" />
-              <span className="sr-only">Acme Inc</span>
-            </Link>
+      <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
+      <TooltipProvider>
+        <Link
+          href=""
+          className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
+          prefetch={false}
+        >
+          <Package2Icon className="h-4 w-4 transition-all group-hover:scale-110" />
+          <span className="sr-only">Acme Inc</span>
+        </Link>
+        
+        {role === "admin" && (
+          <>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
                   href="/dashboard"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg  text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                   prefetch={false}
                 >
                   <LayoutGridIcon className="h-5 w-5" />
@@ -101,11 +112,12 @@ export function Orders() {
               </TooltipTrigger>
               <TooltipContent side="right">Overview</TooltipContent>
             </Tooltip>
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
                   href="/orders"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                   prefetch={false}
                 >
                   <ShoppingCartIcon className="h-5 w-5" />
@@ -128,32 +140,7 @@ export function Orders() {
               </TooltipTrigger>
               <TooltipContent side="right">Users</TooltipContent>
             </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/products"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <PackageIcon className="h-5 w-5" />
-                  <span className="sr-only">Products</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Products</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/categories"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <ListIcon className="h-5 w-5" />
-                  <span className="sr-only">Categories</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Categories</TooltipContent>
-            </Tooltip>
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -182,8 +169,55 @@ export function Orders() {
               <TooltipContent side="right">Shipping</TooltipContent>
             </Tooltip>
 
-          </TooltipProvider>
-        </nav>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/discounts"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  prefetch={false}
+                >
+                  <TagIcon className="mr-1.5 h-4 w-4" />
+                  <span className="sr-only">Discounts</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Discounts</TooltipContent>
+            </Tooltip>
+          </>
+        )}
+
+        {(role === "admin" || role === "staff") && (
+          <>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/products"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  prefetch={false}
+                >
+                  <PackageIcon className="h-5 w-5" />
+                  <span className="sr-only">Products</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Products</TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/categories"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  prefetch={false}
+                >
+                  <ListIcon className="h-5 w-5" />
+                  <span className="sr-only">Categories</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Categories</TooltipContent>
+            </Tooltip>
+          </>
+        )}
+      </TooltipProvider>
+    </nav>
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
           <TooltipProvider>
             <Tooltip>
@@ -328,15 +362,7 @@ export function Orders() {
         <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
           <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
-              <Card className="sm:col-span-2" x-chunk="dashboard-05-chunk-0">
-                <CardHeader className="flex  flex-col flex-row ">
-                  <CardTitle className="basis-1/2">Your Orders</CardTitle>
-                  <Button className="basis-1/2">Create New Order</Button>
-
-                </CardHeader>
-                <CardFooter className="">
-                </CardFooter>
-              </Card>
+             
               <Card x-chunk="dashboard-05-chunk-1">
                 <CardHeader className="pb-2">
                   <CardDescription>Total orders</CardDescription>
@@ -349,7 +375,7 @@ export function Orders() {
               </Card>
               <Card x-chunk="dashboard-05-chunk-1">
                 <CardHeader className="pb-2">
-                  <CardDescription>Total worth of orders</CardDescription>
+                  <CardDescription>Total Sales</CardDescription>
                   <CardTitle className="text-3xl">₹ {totalSales}</CardTitle>
                 </CardHeader>
 

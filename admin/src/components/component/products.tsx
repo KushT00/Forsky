@@ -12,7 +12,7 @@ import { SetStateAction, SVGProps, useEffect, useState } from "react"
 import { JSX } from "react/jsx-runtime"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table"
-import { ListFilter, PlusCircle, MoreHorizontal, File, FilePenIcon, TrashIcon } from "lucide-react"
+import { ListFilter, PlusCircle, MoreHorizontal, File, FilePenIcon, TrashIcon, TagIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
 import {
@@ -429,6 +429,20 @@ export function Products() {
                 </Link>
               </TooltipTrigger>
               <TooltipContent side="right">Shipping</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/discounts"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  prefetch={false}
+                >
+                  {/* <TruckIcon className="h-5 w-5" /> */}
+                  <TagIcon className="mr-1.5 h-4 w-4"/>
+                  <span className="sr-only">Discounts</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Discounts</TooltipContent>
             </Tooltip>
 
           </TooltipProvider>

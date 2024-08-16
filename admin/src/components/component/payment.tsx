@@ -7,32 +7,44 @@ import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbS
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
-import { SVGProps } from "react"
+import { SVGProps, useEffect, useState } from "react"
 import { JSX } from "react/jsx-runtime"
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "../ui/pagination"
 // import { Tabs } from "@radix-ui/react-tabs"
 // import { Table, Badge } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import {Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "../ui/table"
+import { TagIcon } from "lucide-react"
 export function Payments() {
+  const [role, setRole] = useState<string | null>(null);
+  
+  useEffect(() => {
+    // Retrieve the role from local storage
+    const storedRole = localStorage.getItem("role");
+    setRole(storedRole);
+  }, []);
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
-        <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
-          <TooltipProvider>
-            <Link
-              href=""
-              className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
-              prefetch={false}
-            >
-              <Package2Icon className="h-4 w-4 transition-all group-hover:scale-110" />
-              <span className="sr-only">Acme Inc</span>
-            </Link>
+      <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
+      <TooltipProvider>
+        <Link
+          href=""
+          className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
+          prefetch={false}
+        >
+          <Package2Icon className="h-4 w-4 transition-all group-hover:scale-110" />
+          <span className="sr-only">Acme Inc</span>
+        </Link>
+        
+        {role === "admin" && (
+          <>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
                   href="/dashboard"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg  text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                   prefetch={false}
                 >
                   <LayoutGridIcon className="h-5 w-5" />
@@ -41,6 +53,7 @@ export function Payments() {
               </TooltipTrigger>
               <TooltipContent side="right">Overview</TooltipContent>
             </Tooltip>
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -54,7 +67,7 @@ export function Payments() {
               </TooltipTrigger>
               <TooltipContent side="right">Orders</TooltipContent>
             </Tooltip>
-            
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -68,37 +81,12 @@ export function Payments() {
               </TooltipTrigger>
               <TooltipContent side="right">Users</TooltipContent>
             </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/products"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <PackageIcon className="h-5 w-5" />
-                  <span className="sr-only">Products</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Products</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/categories"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <ListIcon className="h-5 w-5" />
-                  <span className="sr-only">Categories</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Categories</TooltipContent>
-            </Tooltip>
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
                   href="/payments"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                   prefetch={false}
                 >
                   <CreditCardIcon className="h-5 w-5" />
@@ -107,7 +95,7 @@ export function Payments() {
               </TooltipTrigger>
               <TooltipContent side="right">Payments</TooltipContent>
             </Tooltip>
-            
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -121,9 +109,56 @@ export function Payments() {
               </TooltipTrigger>
               <TooltipContent side="right">Shipping</TooltipContent>
             </Tooltip>
-             
-          </TooltipProvider>
-        </nav>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/discounts"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  prefetch={false}
+                >
+                  <TagIcon className="mr-1.5 h-4 w-4" />
+                  <span className="sr-only">Discounts</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Discounts</TooltipContent>
+            </Tooltip>
+          </>
+        )}
+
+        {(role === "admin" || role === "staff") && (
+          <>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/products"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  prefetch={false}
+                >
+                  <PackageIcon className="h-5 w-5" />
+                  <span className="sr-only">Products</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Products</TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/categories"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  prefetch={false}
+                >
+                  <ListIcon className="h-5 w-5" />
+                  <span className="sr-only">Categories</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Categories</TooltipContent>
+            </Tooltip>
+          </>
+        )}
+      </TooltipProvider>
+    </nav>
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
           <TooltipProvider>
             <Tooltip>
