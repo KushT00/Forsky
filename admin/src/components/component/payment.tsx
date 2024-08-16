@@ -16,7 +16,11 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "../ui/table"
 import { TagIcon } from "lucide-react"
 import { useNavigate } from "react-router-dom"
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode, JwtPayload  } from "jwt-decode";
+
+interface custompayload extends JwtPayload{
+  user_id:string
+}
 
 export function Payments() {
   const [role, setRole] = useState<string | null>(null);
@@ -59,7 +63,7 @@ export function Payments() {
 
     const token = localStorage.getItem('token');
     if (token) {
-      const decodedToken= jwtDecode(token);
+      const decodedToken= jwtDecode<custompayload>(token);
       const user_id = decodedToken.user_id;
       fetchUserData(user_id);
     } else {

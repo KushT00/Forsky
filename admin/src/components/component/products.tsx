@@ -14,9 +14,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table"
 import { ListFilter, PlusCircle, MoreHorizontal, File, FilePenIcon, TrashIcon, TagIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode, JwtPayload  } from "jwt-decode";
 
-
+interface custompayload extends JwtPayload{
+  user_id:string
+}
 import {
   Pagination,
   PaginationContent,
@@ -143,7 +145,7 @@ export function Products() {
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentPlates = plates.slice(indexOfFirstItem, indexOfLastItem);
-  const currentDiamonds = diamonds.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  // const currentDiamonds = diamonds.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   // Calculate total pages
   const totalPages = Math.ceil(plates.length / itemsPerPage);
@@ -368,7 +370,7 @@ export function Products() {
 
     const token = localStorage.getItem('token');
     if (token) {
-      const decodedToken= jwtDecode(token);
+      const decodedToken= jwtDecode<custompayload>(token);
       const user_id = decodedToken.user_id;
       fetchUserData(user_id);
     } else {

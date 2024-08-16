@@ -12,13 +12,15 @@ import { JSX } from "react/jsx-runtime"
 import { TagIcon } from "lucide-react"
 import { useNavigate } from 'react-router-dom'; // Correct import for react-router-dom v6+
 // import jwt_decode from 'jwt-decode';
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode, JwtPayload  } from "jwt-decode";
 
-
+interface custompayload extends JwtPayload{
+  user_id:string
+}
 interface User {
-  user_id: number;
   
 }
+
 export function Dashboard() {
   const [users, setUsers] = useState<User[]>([]); // Use the User type for state
 
@@ -109,7 +111,7 @@ export function Dashboard() {
   
       const token = localStorage.getItem('token');
       if (token) {
-        const decodedToken= jwtDecode(token);
+        const decodedToken= jwtDecode<custompayload>(token);
         const user_id = decodedToken.user_id;
         fetchUserData(user_id);
       } else {

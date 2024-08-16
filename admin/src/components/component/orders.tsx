@@ -18,8 +18,11 @@ import { Progress } from "@radix-ui/react-progress"
 // import { Badge } from "@/components/ui/badge"
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table"
 import { useNavigate } from "react-router-dom"
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode, JwtPayload  } from "jwt-decode";
 
+interface custompayload extends JwtPayload{
+  user_id:string
+}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface Order {
@@ -119,7 +122,7 @@ export function Orders() {
 
     const token = localStorage.getItem('token');
     if (token) {
-      const decodedToken= jwtDecode(token);
+      const decodedToken= jwtDecode<custompayload>(token);
       const user_id = decodedToken.user_id;
       fetchUserData(user_id);
     } else {

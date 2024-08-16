@@ -12,7 +12,11 @@ import { JSX } from "react/jsx-runtime"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table"
 import { Tabs } from "@radix-ui/react-tabs"
 import { PlusIcon, FilePenIcon, TrashIcon, TagIcon } from "lucide-react"
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode, JwtPayload  } from "jwt-decode";
+
+interface custompayload extends JwtPayload{
+  user_id:string
+}
 import {
   Dialog,
   DialogContent,
@@ -149,7 +153,7 @@ export function Categories() {
 
     const token = localStorage.getItem('token');
     if (token) {
-      const decodedToken= jwtDecode(token);
+      const decodedToken= jwtDecode<custompayload>(token);
       const user_id = decodedToken.user_id;
       fetchUserData(user_id);
     } else {
