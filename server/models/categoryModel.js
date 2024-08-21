@@ -10,6 +10,38 @@ const getCategory = async () => {
   }
 };
 
+const deleteSubCategory = async (req, res) => {
+  const { categoryId, subCategory } = req.body;
+
+  try {
+    // Check if the category with the given ID exists
+    const existingCategory = await pool.query(
+      'SELECT * FROM categories WHERE category_id = $1',
+      [categoryId]
+    );
+
+    if (existingCategory.rows.length === 0) {
+      return res.status(404).json({ error: 'Category not found' });
+    }
+
+    // Check if the subCategory exists in the array
+    const subCategoriesArray = existingCategory.rows[0].sub_categories || [];
+    if (!subCategoriesArray.includes(subCategory)) {
+      return res.status(400).json({ error: 'Subcategory not found' });
+    }
+
+    // Remove the subCategory from the sub_categories array
+    const updatedCategory = await pool.query(
+      'UPDATE categories SET sub_categories = array_remove(sub_categories, $2) WHERE category_id = $1 RETURNING *',
+      [categoryId, subCategory]
+    );
+
+    res.json(updatedCategory.rows[0]);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
+
 const addSubCategory = async (req, res) => {
   const { categoryId, subCategory } = req.body;
 
@@ -99,4 +131,4 @@ const delCategory=async (req, res) => {
 }
 
 
-module.exports = { getCategory,postCategory,putCategory,delCategory,addSubCategory};
+module.exports = { getCategory,postCategory,putCategory,delCategory,addSubCategory,deleteSubCategory};

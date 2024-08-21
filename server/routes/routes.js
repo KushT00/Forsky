@@ -9,13 +9,15 @@ const { fetchPlates} = require('../controllers/platesController');
 const {putUser, delUser, loginUser}= require('../models/userModel');
 const { addPlates, putPlates, delPlates } = require('../models/platesModel');
 const { addDiamonds, putDiamonds, delDiamonds } = require('../models/diamondsModel');
-const { postCategory, putCategory, delCategory, addSubCategory } = require('../models/categoryModel');
+const { postCategory, putCategory, delCategory, addSubCategory, deleteSubCategory } = require('../models/categoryModel');
 const { delOrder, putOrder, addOrder } = require('../models/orderModel');
 const { addProducts, putProducts, delProduct } = require('../models/productModel');
 
 const router = express.Router();
+const db = require('../db');
 const pool = require('../db');
 const { fetchdiscounts, postdiscounts, putdiscounts, deldiscounts } = require('../models/discountModel');
+const fetchcart = require('../models/carModel');
 
 // users
 router.get('/users', fetchUsers);
@@ -56,6 +58,7 @@ router.delete('/orders/:order_id', delOrder);
 router.get('/categories', fetchCategory);
 router.post('/categories', postCategory);
 router.post('/sub', addSubCategory);
+router.delete('/sub', deleteSubCategory);
 router.put('/categories/:category_id',putCategory);
 router.delete('/categories/:category_id', delCategory);
 
@@ -78,5 +81,36 @@ router.get('/discounts', fetchdiscounts);
 router.post('/discounts', postdiscounts);
 router.put('/discounts/:discount_id',putdiscounts);
 router.delete('/discounts/:discount_id', deldiscounts);
+
+router.get('/cart/:userId', fetchcart);
+router.get('/product-price/:product_type/:product_id', async (req, res) => {
+  const { product_type, product_id } = req.params;
+  let priceQuery;
+
+  // Adjust the query based on product_type
+  switch (product_type) {
+    case 'plates':
+      priceQuery = 'SELECT price FROM plates WHERE plate_id = $1';
+      break;
+    case 'diamonds':
+      priceQuery = 'SELECT price FROM diamonds WHERE diamond_id = $1';
+      break;
+    // Add more cases for other product types
+    default:
+      return res.status(400).json({ error: 'Invalid product type' });
+  }
+
+  try {
+    const result = await db.query(priceQuery, [product_id]);
+    if (result.rows.length > 0) {
+      res.json({ price: result.rows[0].price });
+    } else {
+      res.status(404).json({ error: 'Product not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching product price:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 module.exports = router;

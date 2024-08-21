@@ -10,18 +10,21 @@ const getPlates = async () => {
   }
 };
 
-const addPlates =async (req, res) => {
-  const { plate_id, size, diameter, thickness, carat_weight_ea, plate_type, material } = req.body;
+const addPlates = async (req, res) => {
+  const { plate_id, size, diameter, thickness, carat_weight_ea, plate_type, material, price } = req.body;
+
   try {
     const newPlate = await pool.query(
-      'INSERT INTO plates (plate_id, size, diameter, thickness, carat_weight_ea, plate_type, material) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-      [plate_id, size, diameter, thickness, carat_weight_ea, plate_type, material]
+      'INSERT INTO plates (plate_id, size, diameter, thickness, carat_weight_ea, plate_type, material, price) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+      [plate_id, size, diameter, thickness, carat_weight_ea, plate_type, material, price]
     );
+    
     res.json(newPlate.rows[0]);
   } catch (err) {
     res.status(500).send(err.message);
   }
 }
+
 const putPlates = async (req, res) => {
   const { plate_id } = req.params;
   const { size, diameter, thickness, carat_weight_ea, plate_type, material } = req.body;

@@ -1,11 +1,9 @@
 import { Herocarousel } from "./components/component/carousel"
-import ResponsiveContainer from "./components/component/videobanner"
-
+import { Cart } from "./components/component/cart"
 export default function Home() {
   return (
     <div>
-      <Herocarousel/>
-      <ResponsiveContainer/>
+      <Cart/>
     </div>
   )
 }

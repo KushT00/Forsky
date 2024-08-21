@@ -183,7 +183,7 @@ export function Categories() {
 
   const handleAddSubCategory = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
-    
+
     try {
       await axios.post('http://localhost:3000/api/sub', {
         categoryId: selectedCategoryId,
@@ -192,6 +192,7 @@ export function Categories() {
 
       // You can add code here to update the UI after a successful request, 
       // such as re-fetching the categories or updating the state locally.
+      
 
       handleCloseDialog();
     } catch (error) {
@@ -200,6 +201,33 @@ export function Categories() {
     }
   };
 
+  const handleDeleteSubCategory = async (categoryId: Key, subCategory: string) => {
+    try {
+      await axios.delete('http://localhost:3000/api/sub', {
+        data: {
+          categoryId: categoryId,
+          subCategory: subCategory,
+        },
+      });
+  
+      // Update the categories state to remove the deleted sub-category
+      setCategories((prevCategories) =>
+        prevCategories.map((cat) => {
+          if (cat.category_id === categoryId) {
+            return {
+              ...cat,
+              sub_categories: cat.sub_categories.filter((sub: any) => sub !== subCategory),
+            };
+          }
+          return cat;
+        })
+      );
+    } catch (error) {
+      console.error('Error deleting sub-category:', error);
+      // Handle the error (e.g., show an error message)
+    }
+  };
+  
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -510,8 +538,17 @@ export function Categories() {
                         <TableCell className="font-medium">
                           {Array.isArray(cat.sub_categories) && cat.sub_categories.length > 0 ? (
                             cat.sub_categories.map((subCategory: string, index: number) => (
-                              <Badge key={index} className="mr-2">
+                              <Badge key={index} className="mr-1 h-9">
                                 {subCategory}
+                                <Button
+                                  size="custom"
+                                  className="rounded-full  h-9" // This will make the button circular on hover
+                                  // variant=""
+                                  onClick={() => handleDeleteSubCategory(cat.category_id, subCategory)}
+                                >
+                                  <TrashIcon className="h-4 w-4" />
+                                  <span className="sr-only">Delete Sub-Category</span>
+                                </Button>
                               </Badge>
                             ))
                           ) : (
@@ -537,6 +574,7 @@ export function Categories() {
                       </TableRow>
                     ))}
                   </TableBody>
+
 
                   <Dialog open={openAddSubCategory} onOpenChange={handleCloseDialog}>
                     <DialogContent>

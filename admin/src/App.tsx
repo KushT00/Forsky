@@ -13,6 +13,7 @@ import { ToastDemo } from './components/component/body';
 // import ProtectedRoute from './ProtectedRoute';
 import { Discounts } from './components/component/discounts';
 import ProtectedRoute from './ProtectedRoute';
+import { Cart } from './components/component/cart';
  // Assume you have a Home component
 // kush
 function App() {
@@ -53,6 +54,10 @@ function App() {
           <Route
             path="/discounts"
             element={<ProtectedRoute element={<Discounts />} allowedRoles={['admin']} />}
+          />
+          <Route
+            path="/cart"
+            element={<Cart />}
           />
         </Routes>
     </Router>

@@ -10,7 +10,25 @@ const getDiamonds = async () => {
   }
 };
 const addDiamonds = async (req, res) => {
-  const { diamond_id, shape, color, clarity, certificate, fluorescence, make, cut, polish, symmetry, table_percentage, depth_percentage, length_mm, width_mm, depth_mm } = req.body;
+  const {
+    diamond_id,
+    shape,
+    color,
+    clarity,
+    certificate,
+    fluorescence,
+    make,
+    cut,
+    polish,
+    symmetry,
+    table_percentage,
+    depth_percentage,
+    length_mm,
+    width_mm,
+    depth_mm,
+    price  // Add price here
+  } = req.body;
+
   try {
     // Check if the diamond_id already exists
     const existingDiamond = await pool.query('SELECT * FROM diamonds WHERE diamond_id = $1', [diamond_id]);
@@ -19,15 +37,35 @@ const addDiamonds = async (req, res) => {
       return res.status(400).send('Diamond ID already exists');
     }
 
+    // Insert the new diamond, including the price
     const newDiamond = await pool.query(
-      'INSERT INTO diamonds (diamond_id, shape, color, clarity, certificate, fluorescence, make, cut, polish, symmetry, table_percentage, depth_percentage, length_mm, width_mm, depth_mm) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *',
-      [diamond_id, shape, color, clarity, certificate, fluorescence, make, cut, polish, symmetry, table_percentage, depth_percentage, length_mm, width_mm, depth_mm]
+      'INSERT INTO diamonds (diamond_id, shape, color, clarity, certificate, fluorescence, make, cut, polish, symmetry, table_percentage, depth_percentage, length_mm, width_mm, depth_mm, price) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *',
+      [
+        diamond_id,
+        shape,
+        color,
+        clarity,
+        certificate,
+        fluorescence,
+        make,
+        cut,
+        polish,
+        symmetry,
+        table_percentage,
+        depth_percentage,
+        length_mm,
+        width_mm,
+        depth_mm,
+        price  // Include price here
+      ]
     );
+    
     res.json(newDiamond.rows[0]);
   } catch (err) {
     res.status(500).send(err.message);
   }
 };
+
 const putDiamonds =async (req, res) => {
   const { diamond_id } = req.params;
   const { shape, color, clarity, certificate, fluorescence, make, cut, polish, symmetry, table_percentage, depth_percentage, length_mm, width_mm, depth_mm } = req.body;

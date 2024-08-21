@@ -13,11 +13,12 @@ import { JSX } from "react/jsx-runtime"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table"
 import { ListFilter, PlusCircle, MoreHorizontal, File, FilePenIcon, TrashIcon, TagIcon } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { jwtDecode, JwtPayload  } from "jwt-decode";
+import { Badge } from "../ui/badge"
+import { jwtDecode, JwtPayload } from "jwt-decode";
+// import img from "../../../../uploads/1723971355144.jpg"
 
-interface custompayload extends JwtPayload{
-  user_id:string
+interface custompayload extends JwtPayload {
+  user_id: string
 }
 import {
   Pagination,
@@ -53,6 +54,7 @@ interface Diamonds {
   length_mm: number;
   width_mm: number;
   depth_mm: number;
+  price: number;
 }
 
 interface Plates {
@@ -64,11 +66,24 @@ interface Plates {
   carat_weight_ea: string;  // e.g., "1.2345"
   plate_type: string;  // e.g., "CVD"
   material: string;  // e.g., "Diamond"
+  price:number
+}
+
+interface Product {
+  product_id: number;
+  name: string;
+  description: string;  // e.g., "10x10 mm"
+  price: string;  // e.g., "50.000"
+  category_name: string;  // e.g., "0.500"
+  stock_quantity: number;  // e.g., "1.2345"
+  image: string;  // e.g., "CVD"
+  sub_categories: boolean;
 }
 
 
 export function Products() {
   const [diamonds, setDiamonds] = useState<Diamonds[]>([]); // Use the User type for state
+  const [products, setProducts] = useState<Product[]>([]); // Use the User type for state
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [plates, setPlates] = useState<Plates[]>([]); // Use the User type for state
   const [openEditDialog, setOpenEditDialog] = useState(false);
@@ -94,9 +109,26 @@ export function Products() {
     length_mm: '',
     width_mm: '',
     depth_mm: '',
+    price: ''
   });
-  const [selectedDiamond, setSelectedDiamond] = useState<Diamonds | null>(null);
-
+  const [selectedDiamond, setSelectedDiamond] = useState({
+    diamond_id: '',
+    shape: '',
+    color: '',
+    clarity: '',
+    certificate: '',
+    fluorescence: '',
+    make: '',
+    cut: '',
+    symmetry: '',
+    table_percentage: '',
+    depth_percentage: '',
+    polish: '',
+    length_mm: 0.0,
+    width_mm: 0.0,
+    depth_mm: 0.0,
+    price: 0
+  });
 
   const handleAddDiamond = () => {
     console.log("Request body:", JSON.stringify(newDiamond)); // Log the data being sent
@@ -135,6 +167,7 @@ export function Products() {
           length_mm: '',
           width_mm: '',
           depth_mm: '',
+          price: '',
         });
       })
       .catch(error => console.error('Error adding diamond:', error));
@@ -145,7 +178,7 @@ export function Products() {
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentPlates = plates.slice(indexOfFirstItem, indexOfLastItem);
-  // const currentDiamonds = diamonds.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const currentDiamonds = diamonds.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   // Calculate total pages
   const totalPages = Math.ceil(plates.length / itemsPerPage);
@@ -164,6 +197,7 @@ export function Products() {
     carat_weight_ea: '',
     plate_type: '',
     material: '',
+    price: '',
   });
 
 
@@ -179,6 +213,21 @@ export function Products() {
         console.error('Error fetching diamonds:', error);
         setLoading(false); // Also set loading to false in case of error
       });
+  }, []);
+
+  useEffect(() => {
+    // Fetch products from the API
+    fetch('http://localhost:3000/api/products')
+      .then(response => response.json())
+      .then(data => {
+        setProducts(data);
+        setLoading(false); // Set loading to false after data is loaded
+      })
+      .catch(error => {
+        console.error('Error fetching products:', error);
+        setLoading(false); // Also set loading to false in case of error
+      });
+
   }, []);
 
 
@@ -215,6 +264,7 @@ export function Products() {
           carat_weight_ea: '',
           plate_type: '',
           material: '',
+          price:''
         });
       })
       .catch(error => console.error('Error adding plate:', error));
@@ -320,17 +370,55 @@ export function Products() {
     setOpenEditDialog(true);
   };
 
-  const [imageSrc, setImageSrc] = useState<string | undefined>('/placeholder.svg');
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
+  // Handle file input change
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setImageSrc(imageUrl);
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onload = () => setImageSrc(reader.result as string);
+      reader.readAsDataURL(file);
     }
   };
+
+  // Upload the selected file to the server
+  const uploadImage = async () => {
+    if (!selectedFile) {
+      alert('Please select a file first.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    try {
+      const response = await fetch('http://localhost:3000/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const result = await response.text();
+        console.log('File uploaded:', result);
+        alert('File uploaded successfully!');
+        // Optionally, update the imageSrc to the server location
+        // setImageSrc(`http://localhost:3000/uploads/${result}`);
+      } else {
+        console.error('Failed to upload file.');
+        alert('Failed to upload file.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error uploading file.');
+    }
+  };
+
+
   const [role, setRole] = useState<string | null>(null);
-  
+
   useEffect(() => {
     // Retrieve the role from local storage
     const storedRole = localStorage.getItem("role");
@@ -348,9 +436,9 @@ export function Products() {
     navigate('/login'); // Updated function
 
   };
-  
+
   const [username, setUsername] = useState();
-    
+
   useEffect(() => {
     const fetchUserData = async (user_id: string) => {
       // console.log(user_id)
@@ -370,7 +458,7 @@ export function Products() {
 
     const token = localStorage.getItem('token');
     if (token) {
-      const decodedToken= jwtDecode<custompayload>(token);
+      const decodedToken = jwtDecode<custompayload>(token);
       const user_id = decodedToken.user_id;
       fetchUserData(user_id);
     } else {
@@ -380,139 +468,139 @@ export function Products() {
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
-      <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
-      <TooltipProvider>
-        <Link
-          href=""
-          className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
-          prefetch={false}
-        >
-          <Package2Icon className="h-4 w-4 transition-all group-hover:scale-110" />
-          <span className="sr-only">Acme Inc</span>
-        </Link>
-        
-        {role === "admin" && (
-          <>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/dashboard"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <LayoutGridIcon className="h-5 w-5" />
-                  <span className="sr-only">Overview</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Overview</TooltipContent>
-            </Tooltip>
+        <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
+          <TooltipProvider>
+            <Link
+              href=""
+              className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
+              prefetch={false}
+            >
+              <Package2Icon className="h-4 w-4 transition-all group-hover:scale-110" />
+              <span className="sr-only">Acme Inc</span>
+            </Link>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/orders"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <ShoppingCartIcon className="h-5 w-5" />
-                  <span className="sr-only">Orders</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Orders</TooltipContent>
-            </Tooltip>
+            {role === "admin" && (
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href="/dashboard"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                      prefetch={false}
+                    >
+                      <LayoutGridIcon className="h-5 w-5" />
+                      <span className="sr-only">Overview</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Overview</TooltipContent>
+                </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/users"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <UsersIcon className="h-5 w-5" />
-                  <span className="sr-only">Users</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Users</TooltipContent>
-            </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href="/orders"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                      prefetch={false}
+                    >
+                      <ShoppingCartIcon className="h-5 w-5" />
+                      <span className="sr-only">Orders</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Orders</TooltipContent>
+                </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/payments"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <CreditCardIcon className="h-5 w-5" />
-                  <span className="sr-only">Payments</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Payments</TooltipContent>
-            </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href="/users"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                      prefetch={false}
+                    >
+                      <UsersIcon className="h-5 w-5" />
+                      <span className="sr-only">Users</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Users</TooltipContent>
+                </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/shipping"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <TruckIcon className="h-5 w-5" />
-                  <span className="sr-only">Shipping</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Shipping</TooltipContent>
-            </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href="/payments"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                      prefetch={false}
+                    >
+                      <CreditCardIcon className="h-5 w-5" />
+                      <span className="sr-only">Payments</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Payments</TooltipContent>
+                </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/discounts"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <TagIcon className="mr-1.5 h-4 w-4" />
-                  <span className="sr-only">Discounts</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Discounts</TooltipContent>
-            </Tooltip>
-          </>
-        )}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href="/shipping"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                      prefetch={false}
+                    >
+                      <TruckIcon className="h-5 w-5" />
+                      <span className="sr-only">Shipping</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Shipping</TooltipContent>
+                </Tooltip>
 
-        {(role === "admin" || role === "staff") && (
-          <>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/products"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href="/discounts"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                      prefetch={false}
+                    >
+                      <TagIcon className="mr-1.5 h-4 w-4" />
+                      <span className="sr-only">Discounts</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Discounts</TooltipContent>
+                </Tooltip>
+              </>
+            )}
 
-                  prefetch={false}
-                >
-                  <PackageIcon className="h-5 w-5" />
-                  <span className="sr-only">Products</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Products</TooltipContent>
-            </Tooltip>
+            {(role === "admin" || role === "staff") && (
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href="/products"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/categories"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <ListIcon className="h-5 w-5" />
-                  <span className="sr-only">Categories</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Categories</TooltipContent>
-            </Tooltip>
-          </>
-        )}
-      </TooltipProvider>
-    </nav>
+                      prefetch={false}
+                    >
+                      <PackageIcon className="h-5 w-5" />
+                      <span className="sr-only">Products</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Products</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href="/categories"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                      prefetch={false}
+                    >
+                      <ListIcon className="h-5 w-5" />
+                      <span className="sr-only">Categories</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Categories</TooltipContent>
+                </Tooltip>
+              </>
+            )}
+          </TooltipProvider>
+        </nav>
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
           <TooltipProvider>
             <Tooltip>
@@ -645,7 +733,7 @@ export function Products() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>{username? username:"My Account"}</DropdownMenuLabel>
+              <DropdownMenuLabel>{username ? username : "My Account"}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
@@ -713,8 +801,6 @@ export function Products() {
 
                 <CardContent>
                   <Table>
-
-
                     <TableHeader>
                       <TableRow>
                         <TableHead className="hidden w-[100px] sm:table-cell">
@@ -729,7 +815,7 @@ export function Products() {
                           Qty
                         </TableHead>
                         <TableHead className="hidden md:table-cell">
-                          Created at
+                          Sub categories
                         </TableHead>
                         <TableHead>
                           <span className="sr-only">Actions</span>
@@ -737,276 +823,64 @@ export function Products() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">
-                          <Image
-                            alt="Product image"
-                            className="aspect-square rounded-md object-cover"
-                            height="64"
-                            src="/placeholder.svg"
-                            width="64"
-                          />
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          Laser Lemonade Machine
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">Draft</Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          $499.99
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          25
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          2023-07-12 10:42 AM
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                aria-haspopup="true"
-                                size="icon"
-                                variant="ghost"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem>Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">
-                          <Image
-                            alt="Product image"
-                            className="aspect-square rounded-md object-cover"
-                            height="64"
-                            src="/placeholder.svg"
-                            width="64"
-                          />
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          Hypernova Headphones
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">Active</Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          $129.99
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          100
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          2023-10-18 03:21 PM
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                aria-haspopup="true"
-                                size="icon"
-                                variant="ghost"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem>Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">
-                          <Image
-                            alt="Product image"
-                            className="aspect-square rounded-md object-cover"
-                            height="64"
-                            src="/placeholder.svg"
-                            width="64"
-                          />
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          AeroGlow Desk Lamp
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">Active</Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          $39.99
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          50
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          2023-11-29 08:15 AM
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                aria-haspopup="true"
-                                size="icon"
-                                variant="ghost"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem>Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">
-                          <Image
-                            alt="Product image"
-                            className="aspect-square rounded-md object-cover"
-                            height="64"
-                            src="/placeholder.svg"
-                            width="64"
-                          />
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          TechTonic Energy Drink
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary">Draft</Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          $2.99
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          0
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          2023-12-25 11:59 PM
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                aria-haspopup="true"
-                                size="icon"
-                                variant="ghost"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem>Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">
-                          <Image
-                            alt="Product image"
-                            className="aspect-square rounded-md object-cover"
-                            height="64"
-                            src="/placeholder.svg"
-                            width="64"
-                          />
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          Gamer Gear Pro Controller
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">Active</Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          $59.99
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          75
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          2024-01-01 12:00 AM
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                aria-haspopup="true"
-                                size="icon"
-                                variant="ghost"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem>Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">
-                          <Image
-                            alt="Product image"
-                            className="aspect-square rounded-md object-cover"
-                            height="64"
-                            src="/placeholder.svg"
-                            width="64"
-                          />
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          Luminous VR Headset
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">Active</Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          $199.99
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          30
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          2024-02-14 02:14 PM
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                aria-haspopup="true"
-                                size="icon"
-                                variant="ghost"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem>Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
+                      {products.map((product) => (
+                        <TableRow key={product.product_id}>
+                          <TableCell className="hidden sm:table-cell">
+                            <Image
+                              alt="Product image"
+                              className="aspect-square rounded-md object-cover"
+                              height="64"
+                              src={product.image || '/placeholder.svg'}
+
+                              width="64"
+                            />
+                            {/* <img src="https://picsum.photos/200" alt="" /> */}
+
+                          </TableCell>
+                          <TableCell className="font-medium">{product.name}</TableCell>
+                          <TableCell>
+                            <Badge variant={product.category_name === 'Draft' ? 'outline' : 'secondary'}>
+                              {product.category_name}
+                            </Badge>
+
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">${product.price}</TableCell>
+                          <TableCell className="hidden md:table-cell">{product.stock_quantity}</TableCell>
+
+                          <TableCell className="hidden md:table-cell ">
+                            {Array.isArray(product.sub_categories) && product.sub_categories.length > 0 ? (
+                              product.sub_categories.map((subCategory: string, index: number) => (
+                                <Badge key={index} className="mr-1 h-5">
+                                  {subCategory}
+
+                                </Badge>
+                              ))
+                            ) : (
+                              <span> </span>
+                            )}
+
+                          </TableCell>
+                          <TableCell>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  aria-haspopup="true"
+                                  size="icon"
+                                  variant="ghost"
+                                >
+                                  <MoreHorizontal className="h-4 w-4" />
+                                  <span className="sr-only">Toggle menu</span>
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuItem>Edit</DropdownMenuItem>
+                                <DropdownMenuItem>Delete</DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                     </TableBody>
                   </Table>
                 </CardContent>
@@ -1121,7 +995,7 @@ export function Products() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {diamonds.map((diamond) => (
+                          {currentDiamonds.map((diamond) => (
                             <TableRow key={diamond.diamond_id}>
                               <TableCell>{diamond.diamond_id}</TableCell>
                               <TableCell className="font-medium">{diamond.shape}</TableCell>
@@ -1211,10 +1085,13 @@ export function Products() {
                         alt="Product image"
                         className="aspect-square rounded-md object-cover"
                         height={250}
-                        src={imageSrc}
+                        src={imageSrc || '/placeholder.svg'} // Use a placeholder if no image is selected
                         width={250}
                       />
                       <Input id="picture" type="file" onChange={handleImageChange} />
+                      <button onClick={uploadImage} className="btn btn-primary">
+                        Upload Image
+                      </button>
                     </div>
                     {/* Column 1 */}
                     <div className="flex flex-col space-y-4">
@@ -1243,11 +1120,7 @@ export function Products() {
                         {/* Add more options as needed */}
                       </select>
 
-                      <Input
-                        placeholder="Color"
-                        value={newDiamond.color}
-                        onChange={(e) => setNewDiamond({ ...newDiamond, color: e.target.value })}
-                      />
+                      
                       <select
 
                         className="border  border-gray-300 rounded-md p-2 w-full"
@@ -1349,21 +1222,22 @@ export function Products() {
                     {/* Column 5 */}
                     <div className="flex flex-col space-y-4">
                       <Input
-                        placeholder="Make"
-                        value={newDiamond.make}
-                        onChange={(e) => setNewDiamond({ ...newDiamond, make: e.target.value })}
+                        placeholder="Table %"
+                        value={newDiamond.table_percentage}
+                        onChange={(e) => setNewDiamond({ ...newDiamond, table_percentage: e.target.value })}
                       />
                       <Input
-                        placeholder="Cut"
-                        value={newDiamond.cut}
-                        onChange={(e) => setNewDiamond({ ...newDiamond, cut: e.target.value })}
+                        placeholder="Depth %"
+                        value={newDiamond.depth_percentage}
+                        onChange={(e) => setNewDiamond({ ...newDiamond, depth_percentage: e.target.value })}
                       />
                       <Input
-                        placeholder="symmetry"
-                        value={newDiamond.symmetry}
-                        onChange={(e) => setNewDiamond({ ...newDiamond, symmetry: e.target.value })}
+                        placeholder="Price"
+                        value={newDiamond.price}
+                        onChange={(e) => setNewDiamond({ ...newDiamond, price: e.target.value })}
                       />
 
+                      
                     </div>
                   </div>
                   <DialogFooter>
@@ -1489,6 +1363,11 @@ export function Products() {
                         placeholder="Depth (mm)"
                         value={selectedDiamond?.depth_mm || ''}
                         onChange={(e) => setSelectedDiamond({ ...selectedDiamond, depth_mm: parseFloat(e.target.value) })}
+                      />
+                      <Input
+                        placeholder="Depth (mm)"
+                        value={selectedDiamond?.price || ''}
+                        onChange={(e) => setSelectedDiamond({ ...selectedDiamond, price: parseFloat(e.target.value) })}
                       />
                     </div>
                   </div>
@@ -1681,6 +1560,11 @@ export function Products() {
                       placeholder="Material"
                       value={newPlate.material}
                       onChange={(e) => setNewPlate({ ...newPlate, material: e.target.value })}
+                    />
+                    <Input
+                      placeholder="Price"
+                      value={newPlate.price}
+                      onChange={(e) => setNewPlate({ ...newPlate, price: e.target.value })}
                     />
                   </div>
                   <DialogFooter>

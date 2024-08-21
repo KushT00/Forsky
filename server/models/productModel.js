@@ -9,19 +9,20 @@ const getProducts = async () => {
     throw err;
   }
 };
-const addProducts= async (req, res) => {
 
-  const { name, description, price, category_id, stock_quantity } = req.body;
-  try {
-    const newProduct = await pool.query(
-      'INSERT INTO products (name, description, price, category_id, stock_quantity) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [name, description, price, category_id, stock_quantity]
-    );
-    res.json(newProduct.rows[0]);
-  } catch (err) {
-    res.status(500).send(err.message);
-  }
+const addProducts = async ({ name, description, price, stock_quantity, image, sub_categories, category_name }) => {
+  const query = `
+    INSERT INTO products (name, description, price, stock_quantity, image, sub_categories, category_name)
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
+    RETURNING *;
+  `;
+
+  const values = [name, description, price, stock_quantity, image, sub_categories, category_name];
+
+  const result = await pool.query(query, values);
+  return result.rows[0];
 };
+
 const putProducts =async (req, res) => {
   
   const { product_id } = req.params;
