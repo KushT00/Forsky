@@ -12,12 +12,13 @@ const { addDiamonds, putDiamonds, delDiamonds } = require('../models/diamondsMod
 const { postCategory, putCategory, delCategory, addSubCategory, deleteSubCategory } = require('../models/categoryModel');
 const { delOrder, putOrder, addOrder } = require('../models/orderModel');
 const { addProducts, putProducts, delProduct } = require('../models/productModel');
-
+const {fetchcart, postCart} = require('../models/carModel');
+// const postCart = require('../models/carModel')
 const router = express.Router();
 const db = require('../db');
 const pool = require('../db');
 const { fetchdiscounts, postdiscounts, putdiscounts, deldiscounts } = require('../models/discountModel');
-const fetchcart = require('../models/carModel');
+
 
 // users
 router.get('/users', fetchUsers);
@@ -68,6 +69,19 @@ router.get('/diamonds', fetchDiamonds);
 router.post('/diamonds', addDiamonds);
 router.put('/diamonds/:diamond_id', putDiamonds);
 router.delete('/diamonds/:diamond_id',delDiamonds);
+router.get('/diamonds/:id', async (req, res) => {
+  const { id } = req.params; // Extract the diamond ID from the URL parameters
+  try {
+    // Query the database to find the diamond by its ID
+    const result = await pool.query('SELECT * FROM diamonds WHERE diamond_id = $1', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).send('Diamond not found');
+    }
+    res.json(result.rows[0]); // Send the found diamond data as JSON
+  } catch (err) {
+    res.status(500).send(err.message); // Handle any errors
+  }
+});
 
 
 // plates
@@ -81,8 +95,23 @@ router.get('/discounts', fetchdiscounts);
 router.post('/discounts', postdiscounts);
 router.put('/discounts/:discount_id',putdiscounts);
 router.delete('/discounts/:discount_id', deldiscounts);
+router.get('/discounts/:discount', async (req, res) => {
+  const { discount } = req.params;
+  try {
+    // Query the database to find the discount by its code
+    const result = await pool.query('SELECT * FROM discounts WHERE code = $1', [discount]);
+    if (result.rows.length === 0) {
+      return res.status(404).send('Discount code not found');
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+});
+
 
 router.get('/cart/:userId', fetchcart);
+router.post('/cart', postCart);
 router.get('/product-price/:product_type/:product_id', async (req, res) => {
   const { product_type, product_id } = req.params;
   let priceQuery;

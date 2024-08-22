@@ -14,6 +14,8 @@ import { ToastDemo } from './components/component/body';
 import { Discounts } from './components/component/discounts';
 import ProtectedRoute from './ProtectedRoute';
 import { Cart } from './components/component/cart';
+import Items from './components/component/items';
+import SingleDia from './components/component/singleprod';
  // Assume you have a Home component
 // kush
 function App() {
@@ -51,6 +53,8 @@ function App() {
           />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/diamonds" element={<Items />} />
+          <Route path="/diamond/:productid" element={<SingleDia/>} />
           <Route
             path="/discounts"
             element={<ProtectedRoute element={<Discounts />} allowedRoles={['admin']} />}
