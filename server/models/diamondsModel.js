@@ -1,5 +1,7 @@
 // models/userModel.js
 const pool = require('../db');
+const multer = require('multer');
+const path = require('path');
 
 const getDiamonds = async () => {
   try {
@@ -9,6 +11,10 @@ const getDiamonds = async () => {
     throw err;
   }
 };
+
+
+
+
 const addDiamonds = async (req, res) => {
   const {
     diamond_id,
@@ -26,7 +32,7 @@ const addDiamonds = async (req, res) => {
     length_mm,
     width_mm,
     depth_mm,
-    price  // Add price here
+    price // Include price in the request body
   } = req.body;
 
   try {
@@ -37,9 +43,12 @@ const addDiamonds = async (req, res) => {
       return res.status(400).send('Diamond ID already exists');
     }
 
-    // Insert the new diamond, including the price
+    // Handle multiple images
+    const images = req.files ? req.files.map(file => file.filename) : null;
+
+    // Insert the new diamond, including the image filenames if provided
     const newDiamond = await pool.query(
-      'INSERT INTO diamonds (diamond_id, shape, color, clarity, certificate, fluorescence, make, cut, polish, symmetry, table_percentage, depth_percentage, length_mm, width_mm, depth_mm, price) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *',
+      'INSERT INTO diamonds (diamond_id, shape, color, clarity, certificate, fluorescence, make, cut, polish, symmetry, table_percentage, depth_percentage, length_mm, width_mm, depth_mm, price, images) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING *',
       [
         diamond_id,
         shape,
@@ -56,7 +65,8 @@ const addDiamonds = async (req, res) => {
         length_mm,
         width_mm,
         depth_mm,
-        price  // Include price here
+        price,
+        images ? `{${images.join(',')}}` : null // Save array of image filenames or null
       ]
     );
     
@@ -65,6 +75,9 @@ const addDiamonds = async (req, res) => {
     res.status(500).send(err.message);
   }
 };
+
+
+
 
 const putDiamonds =async (req, res) => {
   const { diamond_id } = req.params;

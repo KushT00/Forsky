@@ -15,8 +15,9 @@ const addPlates = async (req, res) => {
 
   try {
     const newPlate = await pool.query(
-      'INSERT INTO plates (plate_id, size, diameter, thickness, carat_weight_ea, plate_type, material, price) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-      [plate_id, size, diameter, thickness, carat_weight_ea, plate_type, material, price]
+      `INSERT INTO plates (plate_id, size, diameter, thickness, carat_weight_ea, plate_type, material, price)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      [plate_id, size, diameter || null, thickness, carat_weight_ea, plate_type, material, price]
     );
     
     res.json(newPlate.rows[0]);

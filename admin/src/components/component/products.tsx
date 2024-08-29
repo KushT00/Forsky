@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/dialog"
 import { Skeleton } from "../ui/skeleton"
 import { useNavigate } from "react-router-dom"
+import axios from "axios"
 // Define the Diamond type
 interface Diamonds {
   diamond_id: number;
@@ -66,7 +67,7 @@ interface Plates {
   carat_weight_ea: string;  // e.g., "1.2345"
   plate_type: string;  // e.g., "CVD"
   material: string;  // e.g., "Diamond"
-  price:number
+  price: number
 }
 
 interface Product {
@@ -130,48 +131,45 @@ export function Products() {
     price: 0
   });
 
-  const handleAddDiamond = () => {
-    console.log("Request body:", JSON.stringify(newDiamond)); // Log the data being sent
 
-    fetch('http://localhost:3000/api/diamonds', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(newDiamond),
-    })
-      .then(response => {
-        if (!response.ok) {
-          return response.text().then(text => {
-            throw new Error(`Failed to add diamond: ${text}`);
-          });
-        }
-        return response.json();
-      })
-      .then(data => {
-        setDiamonds([...diamonds, data]);
-        setOpenAddDiamonds(false);
-        setNewDiamond({
-          diamond_id: '',
-          shape: '',
-          color: '',
-          clarity: '',
-          certificate: '',
-          fluorescence: '',
-          make: '',
-          cut: '',
-          symmetry: '',
-          table_percentage: '',
-          depth_percentage: '',
-          polish: '',
-          length_mm: '',
-          width_mm: '',
-          depth_mm: '',
-          price: '',
-        });
-      })
-      .catch(error => console.error('Error adding diamond:', error));
-  };
+  const [newProduct, setNewProduct] = useState({
+    name: '',
+    description: '',
+    price: '',
+    stock_quantity: '',
+    sub_categories: '',
+    category_name: ''
+  });
+  const handleAddProduct = async () => {
+    const formData = new FormData();
+
+    // Append form fields to formData
+    formData.append('name', newProduct.name);
+    formData.append('description', newProduct.description);
+    formData.append('price', newProduct.price);
+    formData.append('stock_quantity', newProduct.stock_quantity);
+    formData.append('sub_categories', newProduct.sub_categories);
+    formData.append('category_name', newProduct.category_name);
+
+    // Append selected images to formData with unique keys
+    imageFiles.forEach((file, index) => {
+        formData.append(`image`, file); // Notice the key is 'images[]'
+    });
+
+    try {
+      const response = await axios.post('http://localhost:3000/api/products', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      console.log(response);
+      alert('Product added successfully!');
+      setOpenAddProduct(false); // Close the dialog
+    } catch (error) {
+      console.error('Failed to add product:', error);
+      alert('Failed to add product. Please try again.');
+    }
+};
 
 
   // Calculate the indices for the current page
@@ -179,11 +177,12 @@ export function Products() {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentPlates = plates.slice(indexOfFirstItem, indexOfLastItem);
   const currentDiamonds = diamonds.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const currentProducts = products.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   // Calculate total pages
   const totalPages = Math.ceil(plates.length / itemsPerPage);
   const totalDiamonds = Math.ceil(diamonds.length / itemsPerPage);
-  // const totalProducts = Math.ceil(diamonds.length / itemsPerPage);
+  const totalProducts = Math.ceil(products.length / itemsPerPage);
 
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
@@ -199,6 +198,31 @@ export function Products() {
     material: '',
     price: '',
   });
+
+  const [allProducts, setAllProducts] = useState(products);
+  const deleteProduct = async (product_id: number) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/products/${product_id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        // Immediately update the state to remove the deleted product
+        setAllProducts((prevProducts) => prevProducts.filter((product) => product.product_id !== product_id));
+
+        alert(`Product with ID ${product_id} was deleted.`);
+      } else {
+        alert('Failed to delete the product.');
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      alert('An error occurred while deleting the product.');
+    }
+  };
+
+
+
+
 
 
   useEffect(() => {
@@ -264,7 +288,7 @@ export function Products() {
           carat_weight_ea: '',
           plate_type: '',
           material: '',
-          price:''
+          price: ''
         });
       })
       .catch(error => console.error('Error adding plate:', error));
@@ -370,51 +394,84 @@ export function Products() {
     setOpenEditDialog(true);
   };
 
-  const [imageSrc, setImageSrc] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imageSrcs, setImageSrcs] = useState<string[]>([]); // To store multiple image previews
 
-  // Handle file input change
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      const reader = new FileReader();
-      reader.onload = () => setImageSrc(reader.result as string);
-      reader.readAsDataURL(file);
-    }
-  };
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const fileArray = Array.from(files);
 
-  // Upload the selected file to the server
-  const uploadImage = async () => {
-    if (!selectedFile) {
-      alert('Please select a file first.');
-      return;
-    }
+      setImageFiles(fileArray); // Store the selected files in imageFiles state
 
-    const formData = new FormData();
-    formData.append('file', selectedFile);
-
-    try {
-      const response = await fetch('http://localhost:3000/upload', {
-        method: 'POST',
-        body: formData,
+      const fileReaders = fileArray.map((file) => {
+        return new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
       });
 
-      if (response.ok) {
-        const result = await response.text();
-        console.log('File uploaded:', result);
-        alert('File uploaded successfully!');
-        // Optionally, update the imageSrc to the server location
-        // setImageSrc(`http://localhost:3000/uploads/${result}`);
-      } else {
-        console.error('Failed to upload file.');
-        alert('Failed to upload file.');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Error uploading file.');
+      Promise.all(fileReaders)
+        .then((results) => setImageSrcs(results)) // Preview all images
+        .catch((error) => console.error('Error reading files:', error));
     }
   };
+
+  const handleAddDiamond = () => {
+    const formData = new FormData();
+
+    // Append diamond details to FormData
+    Object.keys(newDiamond).forEach((key) => {
+      formData.append(key, newDiamond[key as keyof Diamonds]);
+    });
+
+    // Append each image file to FormData
+    imageFiles.forEach((file, index) => {
+      formData.append(`image`, file); // Append the file to 'images[]' array
+    });
+
+    fetch('http://localhost:3000/api/diamonds', {
+      method: 'POST',
+      body: formData,
+    })
+      .then(response => {
+        if (!response.ok) {
+          return response.text().then(text => {
+            throw new Error(`Failed to add diamond: ${text}`);
+          });
+        }
+        return response.json();
+      })
+      .then(data => {
+        setDiamonds((prevDiamonds) => [...prevDiamonds, data]);
+        setOpenAddDiamonds(false);
+        setNewDiamond({
+          diamond_id: '',
+          shape: '',
+          color: '',
+          clarity: '',
+          certificate: '',
+          fluorescence: '',
+          make: '',
+          cut: '',
+          polish: '',
+          symmetry: '',
+          table_percentage: '',
+          depth_percentage: '',
+          length_mm: '',
+          width_mm: '',
+          depth_mm: '',
+          price: '',
+        });
+        setImageFiles([]); // Clear the image files after upload
+        setImageSrcs([]);  // Clear the image previews
+      })
+      .catch(error => console.error('Error adding diamond:', error));
+  };
+
+
 
 
   const [role, setRole] = useState<string | null>(null);
@@ -465,6 +522,52 @@ export function Products() {
       console.log("No token found in local storage.");
     }
   }, []);
+  const [categories, setCategories] = useState([]);
+
+  const [subCategories, setSubCategories] = useState([]);
+
+  // Fetch categories from the API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/categories');
+        setCategories(response.data);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  // Handle category change and update subcategories
+  const handleCategoryChange = (e: { target: { value: any } }) => {
+    const selectedCategory = e.target.value;
+    setNewProduct({ ...newProduct, category_name: selectedCategory });
+
+    // Find the selected category in the categories array
+    const category = categories.find(cat => cat.name === selectedCategory);
+
+    // If the category has subcategories, update the subCategories state
+    if (category && category.sub_categories) {
+      setSubCategories(category.sub_categories);
+    } else {
+      setSubCategories([]); // Clear subcategories if none are available
+    }
+  };
+  // State to manage dialog visibility
+  const [openAddProduct, setOpenAddProduct] = useState(false);
+
+  // Handler to open dialog
+  const handleOpenDialog = () => {
+    setOpenAddProduct(true);
+  };
+
+  // Handler to close dialog (optional, if you want to control closing)
+  const handleCloseDialog = () => {
+    setOpenAddProduct(false);
+  };
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
@@ -707,7 +810,7 @@ export function Products() {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Overview</BreadcrumbPage>
+                <BreadcrumbPage>Products</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -790,7 +893,7 @@ export function Products() {
                         Export
                       </span>
                     </Button>
-                    <Button size="sm" className="h-8 gap-1">
+                    <Button size="sm" className="h-8 gap-1" onClick={handleOpenDialog}>
                       <PlusCircle className="h-3.5 w-3.5" />
                       <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                         Add Product
@@ -823,42 +926,35 @@ export function Products() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {products.map((product) => (
+                      {currentProducts.map((product) => (
                         <TableRow key={product.product_id}>
                           <TableCell className="hidden sm:table-cell">
-                            <Image
+                            <img
                               alt="Product image"
                               className="aspect-square rounded-md object-cover"
                               height="64"
-                              src={product.image || '/placeholder.svg'}
-
+                              src={product.image && product.image[0] ? `http://localhost:3000/uploads/${product.image[0]}` : '/placeholder.svg'}
                               width="64"
                             />
-                            {/* <img src="https://picsum.photos/200" alt="" /> */}
-
                           </TableCell>
                           <TableCell className="font-medium">{product.name}</TableCell>
                           <TableCell>
                             <Badge variant={product.category_name === 'Draft' ? 'outline' : 'secondary'}>
                               {product.category_name}
                             </Badge>
-
                           </TableCell>
-                          <TableCell className="hidden md:table-cell">${product.price}</TableCell>
+                          <TableCell className="hidden md:table-cell">₹{product.price}</TableCell>
                           <TableCell className="hidden md:table-cell">{product.stock_quantity}</TableCell>
-
-                          <TableCell className="hidden md:table-cell ">
+                          <TableCell className="hidden md:table-cell">
                             {Array.isArray(product.sub_categories) && product.sub_categories.length > 0 ? (
                               product.sub_categories.map((subCategory: string, index: number) => (
                                 <Badge key={index} className="mr-1 h-5">
                                   {subCategory}
-
                                 </Badge>
                               ))
                             ) : (
                               <span> </span>
                             )}
-
                           </TableCell>
                           <TableCell>
                             <DropdownMenu>
@@ -875,13 +971,96 @@ export function Products() {
                               <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                 <DropdownMenuItem>Edit</DropdownMenuItem>
-                                <DropdownMenuItem>Delete</DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => deleteProduct(product.product_id)}
+                                >
+                                  Delete
+                                </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
+                    <Dialog open={openAddProduct} onOpenChange={setOpenAddProduct}>
+                      <DialogContent style={{ maxWidth: '50%' }}>
+                        <DialogHeader>
+                          <DialogTitle>Add New Product</DialogTitle>
+                        </DialogHeader>
+                        <div className="grid grid-cols-2 gap-3">
+                          {/* Column 0 - Image Upload */}
+                          <div className="flex flex-col space-y-4">
+                            <Image
+                              alt="Product image"
+                              className="aspect-square rounded-md object-cover"
+                              height={250}
+                              src={imageFiles[0] ? URL.createObjectURL(imageFiles[0]) : '/placeholder.svg'}
+                              width={250}
+                            />
+                            <Input id="picture" type="file" multiple onChange={handleImageChange} />
+                          </div>
+
+                          {/* Other columns with input fields */}
+                          <div className="flex flex-col space-y-4">
+                            <Input
+                              placeholder="Product Name"
+                              value={newProduct.name}
+                              onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                            />
+                            <Input
+                              placeholder="Description"
+                              value={newProduct.description}
+                              onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
+                            />
+                            <Input
+                              placeholder="Price"
+                              value={newProduct.price}
+                              onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                            />
+                            <Input
+                              placeholder="Stock Quantity"
+                              value={newProduct.stock_quantity}
+                              onChange={(e) => setNewProduct({ ...newProduct, stock_quantity: e.target.value })}
+                            />
+
+                            {/* Category Dropdown */}
+                            <select
+                              className="border border-gray-300 rounded-md p-2 w-full"
+                              value={newProduct.category_name}
+                              onChange={handleCategoryChange} // Changed to handleCategoryChange
+                            >
+                              <option value="">Select Category</option>
+                              {categories.map((category) => (
+                                <option key={category.category_id} value={category.name}>
+                                  {category.name}
+                                </option>
+                              ))}
+                            </select>
+
+                            {/* Subcategory Dropdown */}
+                            <select
+                              className="border border-gray-300 rounded-md p-2 w-full"
+                              value={newProduct.sub_categories}
+                              multiple
+                              onChange={(e) => {
+                                const selectedSubCategories = Array.from(e.target.selectedOptions, option => option.value);
+                                setNewProduct({ ...newProduct, sub_categories: selectedSubCategories });
+                              }}
+                            >
+                              <option value="">Select Subcategories</option>
+                              {subCategories.map((subCategory, index) => (
+                                <option key={index} value={subCategory}>
+                                  {subCategory}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button onClick={handleAddProduct}>Add Product</Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                   </Table>
                 </CardContent>
                 <CardFooter>
@@ -896,7 +1075,7 @@ export function Products() {
                       </li>
 
                       {/* Page Numbers */}
-                      {[...Array(totalPages)].map((_, i) => (
+                      {[...Array(totalProducts)].map((_, i) => (
                         <li key={i + 1}>
                           <PaginationLink
                             href="#"
@@ -909,7 +1088,7 @@ export function Products() {
                       ))}
 
                       {/* Handle Next Button */}
-                      <li className={currentPage === totalPages ? 'disabled' : ''}>
+                      <li className={currentPage === totalProducts ? 'disabled' : ''}>
                         <PaginationNext
                           href="#"
                           onClick={() => handlePageChange(currentPage + 1)}
@@ -1085,13 +1264,15 @@ export function Products() {
                         alt="Product image"
                         className="aspect-square rounded-md object-cover"
                         height={250}
-                        src={imageSrc || '/placeholder.svg'} // Use a placeholder if no image is selected
+                        src={imageSrcs[0] || '/placeholder.svg'} // Display the first image or a placeholder
                         width={250}
                       />
-                      <Input id="picture" type="file" onChange={handleImageChange} />
-                      <button onClick={uploadImage} className="btn btn-primary">
+                      <Input id="picture" type="file" multiple onChange={handleImageChange} />
+
+                      <button onClick={handleAddDiamond} className="btn btn-primary">
                         Upload Image
                       </button>
+
                     </div>
                     {/* Column 1 */}
                     <div className="flex flex-col space-y-4">
@@ -1120,7 +1301,7 @@ export function Products() {
                         {/* Add more options as needed */}
                       </select>
 
-                      
+
                       <select
 
                         className="border  border-gray-300 rounded-md p-2 w-full"
@@ -1237,7 +1418,7 @@ export function Products() {
                         onChange={(e) => setNewDiamond({ ...newDiamond, price: e.target.value })}
                       />
 
-                      
+
                     </div>
                   </div>
                   <DialogFooter>
@@ -1422,7 +1603,7 @@ export function Products() {
                     <Button size="sm" className="h-8 gap-1" onClick={() => setOpenAddDialog(true)}>
                       <PlusCircle className="h-3.5 w-3.5" />
                       <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Add Product
+                        Add CVD
                       </span>
                     </Button>
                   </div>
@@ -1449,7 +1630,7 @@ export function Products() {
                       {currentPlates.map((plate) => (
                         <TableRow key={plate.plate_id}>
                           <TableCell>{plate.plate_id}</TableCell>
-                          <TableCell className="font-medium">{plate.size}</TableCell>
+                          <TableCell className="font-medium">{plate.size} x {plate.size} mm</TableCell>
                           <TableCell>{plate.diameter}</TableCell>
                           <TableCell>{plate.thickness}</TableCell>
                           <TableCell>{plate.carat_weight_ea}</TableCell>
@@ -1523,7 +1704,7 @@ export function Products() {
               <Dialog open={openAddDialog} onOpenChange={setOpenAddDialog}>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Add New Plate</DialogTitle>
+                    <DialogTitle>Add New CVD</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
                     <Input
@@ -1532,7 +1713,7 @@ export function Products() {
                       onChange={(e) => setNewPlate({ ...newPlate, plate_id: e.target.value })}
                     />
                     <Input
-                      placeholder="Size"
+                      placeholder="Size (mm)"
                       value={newPlate.size}
                       onChange={(e) => setNewPlate({ ...newPlate, size: e.target.value })}
                     />
@@ -1542,20 +1723,30 @@ export function Products() {
                       onChange={(e) => setNewPlate({ ...newPlate, diameter: e.target.value })}
                     />
                     <Input
-                      placeholder="Thickness"
+                      placeholder="Thickness (mm)"
                       value={newPlate.thickness}
                       onChange={(e) => setNewPlate({ ...newPlate, thickness: e.target.value })}
                     />
                     <Input
-                      placeholder="Carat Weight (ea)"
+                      placeholder="Carat Weight (ct)"
                       value={newPlate.carat_weight_ea}
                       onChange={(e) => setNewPlate({ ...newPlate, carat_weight_ea: e.target.value })}
                     />
-                    <Input
-                      placeholder="Plate Type"
+
+                    <select
+
+                      className="border  border-gray-300 rounded-md p-2 w-full"
                       value={newPlate.plate_type}
-                      onChange={(e) => setNewPlate({ ...newPlate, plate_type: e.target.value })}
-                    />
+                      onChange={(e) => setNewPlate({ ...newPlate, plate_type: e.target.value })} // Correctly passing the event handler
+                    >
+                      <option >Select CVD</option>
+                      <option value="CVD Plate">CVD Plate</option>
+                      <option value="Electronic Grade CVD">Electronic Grade CVD</option>
+                      <option value="Mechanical Grade CVD">Mechanical Grade CVD</option>
+                      <option value="Thermal Grade CVD">Thermal Grade CVD</option>
+                      <option value="Optical Grade CVD">Optical Grade CVD</option>
+                      {/* Add more options as needed */}
+                    </select>
                     <Input
                       placeholder="Material"
                       value={newPlate.material}
@@ -1568,7 +1759,7 @@ export function Products() {
                     />
                   </div>
                   <DialogFooter>
-                    <Button onClick={handleAddPlate}>Add Plate</Button>
+                    <Button onClick={handleAddPlate}>Add CVD</Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
@@ -1605,11 +1796,22 @@ export function Products() {
                         value={selectedPlate.carat_weight_ea}
                         onChange={(e) => setSelectedPlate({ ...selectedPlate, carat_weight_ea: e.target.value })}
                       />
-                      <Input
-                        placeholder="Plate Type"
+
+                      <select
+
+                        className="border  border-gray-300 rounded-md p-2 w-full"
                         value={selectedPlate.plate_type}
-                        onChange={(e) => setSelectedPlate({ ...selectedPlate, plate_type: e.target.value })}
-                      /><Input
+                        onChange={(e) => setSelectedPlate({ ...selectedPlate, plate_type: e.target.value })} // Correctly passing the event handler
+                      >
+                        {/* Default empty option */}
+                        <option value="CVD Plate">CVD Plate</option>
+                        <option value="Electronic Grade CVD">Electronic Grade CVD</option>
+                        <option value="Mechanical Grade CVD">Mechanical Grade CVD</option>
+                        <option value="Thermal Grade CVD">Thermal Grade CVD</option>
+                        <option value="Optical Grade CVD">Optical Grade CVD</option>
+                        {/* Add more options as needed */}
+                      </select>
+                      <Input
                         placeholder="Material"
                         value={selectedPlate.material}
                         onChange={(e) => setSelectedPlate({ ...selectedPlate, material: e.target.value })}

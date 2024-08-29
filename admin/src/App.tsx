@@ -9,20 +9,22 @@ import { Shipping } from './components/component/shipping';
 // import { Filter2 } from './components/component/filter2';
 import { Login } from './components/component/login';
 import { Signup } from './components/component/signup';
-import { ToastDemo } from './components/component/body';
 // import ProtectedRoute from './ProtectedRoute';
 import { Discounts } from './components/component/discounts';
 import ProtectedRoute from './ProtectedRoute';
-import { Cart } from './components/component/cart';
+
 import Items from './components/component/items';
 import SingleDia from './components/component/singleprod';
+import { Test } from './components/component/test';
+import Productitems from './components/component/productitems';
+import Productsingle from './components/component/productsingle';
  // Assume you have a Home component
 // kush
 function App() {
   return (
     <Router>
       <Routes>
-      <Route path="/" element={<ToastDemo />} />
+  
           <Route
             path="/dashboard"
             element={<ProtectedRoute element={<Dashboard />} allowedRoles={['admin']} />}
@@ -55,14 +57,14 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/diamonds" element={<Items />} />
           <Route path="/diamond/:productid" element={<SingleDia/>} />
+          <Route path="/filter" element={<Test/>} />
+          <Route path="/store" element={<Productitems/>} />
+          <Route path="/product/:product_id" element={<Productsingle/>} />
           <Route
             path="/discounts"
             element={<ProtectedRoute element={<Discounts />} allowedRoles={['admin']} />}
           />
-          <Route
-            path="/cart"
-            element={<Cart />}
-          />
+          
         </Routes>
     </Router>
   );

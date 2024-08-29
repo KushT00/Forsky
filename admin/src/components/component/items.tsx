@@ -30,6 +30,7 @@ interface Diamonds {
     width_mm: number;
     depth_mm: number;
     price: number;
+    images:string[]
   }
 
 export default function Items() {
@@ -62,9 +63,9 @@ export default function Items() {
         }
     }, []);
     return (
-        <div className="grid md:grid-cols-[300px_1fr] gap-8 p-4 md:p-8">
+        <div className="grid md:grid-cols-[200px_1fr] gap-4 md:p-8">
             <div className="grid gap-6">
-                <Accordion type="single" collapsible>
+                <Accordion type="single" collapsible defaultValue="categories">
                     <AccordionItem value="categories">
                         <AccordionTrigger className="text-lg font-medium">Categories</AccordionTrigger>
                         <AccordionContent>
@@ -159,14 +160,15 @@ export default function Items() {
                     </AccordionItem>
                 </Accordion>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 ">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 ">
             {diamonds.map((diamond) => (
                 <Link
                     key={diamond.diamond_id}
                     to={`/diamond/${diamond.diamond_id}`}
                     className="bg-background rounded-lg overflow-hidden shadow-sm h-[300px] md:h-[400px]">
                     <img
-                        src="/placeholder.svg"
+                        src={diamond.images && diamond.images[0] ? `http://localhost:3000/uploads/${diamond.images[0]}` : 'http://localhost:3000/uploads/DefaultDiamond.jpg'}
+                        
                         alt={`${diamond.shape} Diamond`}
                         width={300}
                         height={200}
@@ -177,7 +179,7 @@ export default function Items() {
                         <p className="text-muted-foreground text-sm">Color: {diamond.color}</p>
                         <div className="flex items-center justify-between mt-2">
                             <span className="text-primary font-medium">
-                                {diamond.price ? `$${diamond.price}` : "Price on Request"}
+                                {diamond.price ? `₹${diamond.price}` : "Price on Request"}
                             </span>
                             <Button size="icon" variant="ghost">
                                 <HeartIcon className="w-4 h-4" />

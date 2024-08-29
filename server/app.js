@@ -1,3 +1,5 @@
+// app.js
+
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
@@ -14,7 +16,7 @@ const { addProducts } = require('./models/productModel');
 app.use(cors());
 
 // Ensure 'uploads/' directory exists
-const uploadDir = '../uploads/';
+const uploadDir = 'uploads/';
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -52,27 +54,31 @@ const upload = multer({
 app.use(express.json());
 
 // Routes with multer integration
-app.post('/upload', upload.single('file'), (req, res) => {
-  // `file` is the name of the file input field
-  if (!req.file) {
-    return res.status(400).send('No file uploaded.');
+app.post('/upload', upload.array('files', 10), (req, res) => { // 'files' is the name of the file input field, '10' is the max number of files
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).send('No files uploaded.');
   }
-  res.send(`File uploaded: ${req.file.filename}`);
+  const fileNames = req.files.map(file => file.filename);
+  res.send(`Files uploaded: ${fileNames.join(', ')}`);
 });
-// Routes with multer integration
 
-// Route to handle product data and image upload
-app.post('/api/products', upload.single('image'), async (req, res) => {
+// Product upload route
+app.post('/api/products', upload.array('image', 5), async (req, res) => {
   try {
     const { name, description, price, stock_quantity, sub_categories, category_name } = req.body;
 
-    // Check if an image was uploaded
-    if (!req.file) {
-      return res.status(400).send('No image uploaded.');
+    // Check if files were uploaded
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).send('No images uploaded.');
     }
 
-    // Convert sub_categories to a PostgreSQL array literal
-    const formattedSubCategories = `{${sub_categories.split(',').map(item => `"${item}"`).join(',')}}`;
+    const imageFiles = req.files.map(file => file.filename);
+
+    // Handle missing or empty sub_categories
+    let formattedSubCategories = '{}';  // Default to an empty array literal
+    if (sub_categories) {
+      formattedSubCategories = `{${sub_categories.split(',').map(item => `"${item.trim()}"`).join(',')}}`;
+    }
 
     // Call the addProducts function to store product data in the database
     const product = await addProducts({
@@ -80,7 +86,7 @@ app.post('/api/products', upload.single('image'), async (req, res) => {
       description,
       price,
       stock_quantity,
-      image: req.file.filename, // Save the image filename in the database
+      image: `{${imageFiles.join(',')}}`, // Save the image filenames as an array in the database
       sub_categories: formattedSubCategories,
       category_name
     });
@@ -92,9 +98,17 @@ app.post('/api/products', upload.single('image'), async (req, res) => {
 });
 
 
+// Serve static files from the 'uploads' directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Use userRoutes for API routes
 app.use('/api', userRoutes);
 
 app.get('/', (req, res) => res.send('Hello World!'));
 
+
+// Start the server
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+
+// If `upload` is needed elsewhere, export it
+module.exports = upload; // Optional: Only if you need to use `upload` in other files
