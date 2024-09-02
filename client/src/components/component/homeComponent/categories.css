@@ -1,0 +1,108 @@
+
+
+@import url('https://fonts.googleapis.com/css2?family=Moderustic:wght@300..800&display=swap');
+
+
+.title-font {
+  font-family: 'Moderustic', sans-serif;
+  font-weight: 700; /* Bold font weight */
+}
+
+.image-grid-container {
+  width: 90%; /* Reduce the size to 60% of the parent/container */
+  margin: 0 auto; /* Center the grid horizontally */
+  padding-left: 5px; /* Add padding to the left */
+  padding-right: 5px; /* Add padding to the right */
+  background: #F6F6F6;
+  overflow: hidden;
+}
+  
+  .image-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: repeat(2, 1fr);
+    gap: 10px;
+  }
+  
+  .grid-item {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #ddd;
+  }
+  
+  /* First and third items span two rows */
+  .grid-item:nth-child(1),
+  .grid-item:nth-child(3) {
+    grid-row: span 2;
+  }
+  
+  /* Ensure images fill the entire grid item */
+  .grid-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  
+  .overlay {
+    position: absolute;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3 );
+    color: white;
+    width: 100%;
+    padding: 0px;
+    box-sizing: border-box;
+    text-align: left;
+    transition: background 0.3s ease;
+  }
+  
+  .grid-item:hover .overlay {
+    background: rgba(0, 0, 0, 0.9);
+  }
+  
+  .overlay h2 {
+    margin: 0 0 10px;
+    font-size: 1.2em;
+  }
+  
+  .overlay p {
+    margin: 0 0 15px;
+  }
+  
+  .overlay button {
+    padding: 10px 20px;
+    background: black;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background 0.3s ease;
+  }
+  
+  .overlay button:hover {
+    background: #333;
+  }
+  
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+    .image-grid-container {
+      width: 90%; /* Adjust width on smaller screens */
+      height: 132vh;
+    }
+  
+    .image-grid {
+      grid-template-columns: 1fr;
+      grid-template-rows: repeat(4, auto);
+    }
+  
+    .grid-item {
+      height: 300px; /* Adjust height for better viewing */
+    }
+  
+    .grid-item:nth-child(1),
+    .grid-item:nth-child(3) {
+      grid-row: span 1;
+    }
+  }
+  
+  

@@ -1,0 +1,22 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-image: url('../assets/pattern.png'); /* Ensure the path is correct */
+    background-position: center;
+    background-repeat: repeat; /* Allow the image to repeat */
+    background-attachment: fixed; /* Keeps the background image fixed during scroll */
+    width: 100%;
+    min-height: 100%; /* Ensure the body extends to at least the full viewport height */
+}
+
+body::before {
+    content: ''; /* Required for the pseudo-element */
+    position: fixed; /* Positions the pseudo-element within the body */
+    top: 0;
+    left: 0;
+    width: 100%; /* Covers the full width */
+    height: 100%; /* Covers the full height */
+    background: linear-gradient(rgba(255, 255, 255, 2), rgba(255, 255, 255, 0.9)); /* Thicker white layer */
+    z-index: -1; /* Sends the layer behind the content */
+    pointer-events: none; /* Ensure the pseudo-element doesn’t interfere with interaction */
+}

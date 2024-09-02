@@ -1,0 +1,134 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&display=swap');
+
+.card-section {
+    text-align: center;
+    margin: 20px;
+    overflow: hidden;
+}
+
+.section-title {
+    font-size: 5em;
+    font-family: "Dancing Script", cursive;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.card-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 items per row for larger screens */
+    gap: 10px; /* General gap between items */
+    padding: 10px;
+    grid-auto-rows: auto; /* Adjust the height based on content */
+}
+
+.card {
+    background: transparent; /* Removed the background color */
+    border-radius: 0px;
+    padding: 10px;
+    text-align: left;
+    border: none; /* Remove any border */
+} 
+
+.card-image-wrapper {
+    display: inline-block;
+    padding: 3px;
+    background: linear-gradient(to right, #c0c0c0, #ffffff); /* Silver gradient */
+    border-radius: 8px; /* Optional: add rounded corners */
+}
+
+.card-image {
+    width: 100%;
+    border-radius: 0px;
+    transition: transform 0.3s ease;
+    display: block;
+    border-radius: 5px; /* Optional: add rounded corners */
+}
+
+.card-image:hover {
+    transform: scale(1.1); /* Zooms in the image */
+}
+
+.card-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.card-description {
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+.learn-more-btn {
+    color: #fff;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.learn-more-btn:hover {
+    background-color: #ffffff;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .card-container {
+        grid-template-columns: repeat(2, 1fr); /* 2 items per row for mobile screens */
+        gap: 10px; /* Adjust the gap between cards as needed */
+        overflow-y: visible; /* Remove vertical scroll */
+        max-height: unset; /* Remove max height restriction */
+        padding: 5px;
+    }
+
+    .card {
+        min-width: 100%; /* Ensure the card takes up the full width of the container */
+        max-width: 100%;
+        padding: 5px; /* Reduce padding */
+        height: 250px;
+    }
+
+    .card-image-wrapper {
+        height: 100px; /* Reduce height of the image container */
+        /* width:150px; */
+    }
+
+    .card-image {
+        height: 100%; /* Ensure the image takes up the full height */
+        object-fit: cover; /* Make sure the image fits without being cut off */
+    }
+
+    .section-title {
+        font-size: 40px;
+        text-align: center;
+    }
+}
+
+@keyframes shineAnimation {
+    0%, 10% {
+      background-position: -1000px;
+    }
+    20% {
+      background-position: top left;
+    }
+    90% {
+      background-position: top right;
+    }
+    100% {
+      background-position: 1000px;
+    }
+  }
+  
+  .shine {
+    font-size: 1.28em;
+    margin: 0 auto;
+    margin-bottom: 1em;
+    font-weight: bold;
+    background: #222 linear-gradient(to right, #222, #fff, #222) no-repeat;
+    background-size: 24px;
+    color: rgba(255, 255, 255, 0);
+    background-clip: text;
+    animation: shineAnimation 3s infinite;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2), 0 0 25px rgba(255, 255, 255, 0.2);
+  }
+  

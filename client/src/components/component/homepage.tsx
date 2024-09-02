@@ -1,33 +1,28 @@
-import Navbar1 from './navbar1.tsx';
-import Bannerimgvid2 from './/bannerimgvid2.tsx';
-import Imagelist3 from './3imagegrid3.tsx';
-import Videocard4 from './videocard.tsx'
-import Cvdcards5 from './cvdcards5.tsx'
-import Rightvid from './videoright.tsx'
-import Jewellerycategories from './jewellerycategories.tsx'
-import Diamondfilter from './Diamondfilter.tsx'
-import Footer from './footer.tsx'
-import ScrollEffect from './header.tsx'
-import Services from './services.tsx'
-import Cardcomponent from './cardcomponent.tsx'
+
+
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 import './styles.css';
+import Bannerimgvid2 from './homeComponent/bannerimgvid2.tsx';
+import Imagegrid from './homeComponent/imagegrid.tsx';
+import Diamondfilter from './homeComponent/Diamondfilter.tsx';
+import Videocard4 from './homeComponent/videocard.tsx';
+import Cvdcards5 from './homeComponent/cvdcards5.tsx';
+import Jewellerycategories from './homeComponent/jewellerycategories.tsx';
+import Footer from './footer.tsx';
 // import Footer from ''
 export default function Homepage() {
   return (
     <>
 
     
-      <Navbar1 />
+ 
       <Bannerimgvid2 />
       
-      <Imagelist3 />
-      {/* <ScrollEffect /> */}
       <Diamondfilter/>
+      <Imagegrid />
       <Videocard4/>
       <Cvdcards5/>
-      {/* <Cardcomponent/> */}
-      
-      {/* <Rightvid/> */}
      <Jewellerycategories/>
      
      <Footer/>

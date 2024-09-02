@@ -11,6 +11,7 @@ import Allplates from './components/component/plates';
 import PlateSingle from './components/component/CVD_details';
 import { DiamondFILTER } from './components/component/diamonds';
 import Layout from './layout';
+import Homepage from './components/component/homepage';
 // import Layout from './components/Layout';
 
 const Home: React.FC = () => {
@@ -22,6 +23,7 @@ const Home: React.FC = () => {
       </Routes>
       <Layout>
         <Routes>
+          <Route path="/" element={<Homepage/>} />
           <Route path="/filter" element={<DiamondFILTER />} />
           <Route path="/diamonds" element={<Items />} />
           <Route path="/diamond/:productid" element={<SingleDia />} />
