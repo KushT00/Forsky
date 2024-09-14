@@ -14,6 +14,7 @@ Forsky is a full-stack web application designed to manage the selling and resell
 
 ## Tech Stack
 **FRONTEND>>>**
+
 **Framework**: React.js with Vite
 
 **Language**: TypeScript
@@ -21,6 +22,7 @@ Forsky is a full-stack web application designed to manage the selling and resell
 **Styling**: Tailwind CSS 
 
 **BACKEND>>>**
+
 **Framework**: Express.js (Node.js)
 
 **Database**: PostgreSQL
