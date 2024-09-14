@@ -88,7 +88,7 @@ export function Signup() {
             border: '1px solid rgba(255, 255, 255, 0.3)'
           }}>
           <div className="space-y-4 text-center">
-            <h1 className="text-xl font-bold">Sign Up for Diamond Delight</h1>
+            <h1 className="text-xl font-bold">SignUp</h1>
             {/* <p className="text-muted-foreground">Create your account to access our exquisite diamond collection.</p> */}
           </div>
           <form className="mt-6 space-y-4" onSubmit={handleSubmit}>

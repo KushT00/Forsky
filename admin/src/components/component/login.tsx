@@ -76,7 +76,7 @@ export function Login() {
       }}
     >
       <div className="space-y-2 text-center">
-        <h1 className="text-xl font-bold">Login to Forsky</h1>
+        <h1 className="text-xl font-bold">Login </h1>
         {error && <p className="text-red-500">{error}</p>}
       </div>
       <form className="mt-6 space-y-4" onSubmit={handleLogin}>

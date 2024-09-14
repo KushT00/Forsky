@@ -404,7 +404,7 @@ export function Dashboard() {
                   <CardDescription>The total revenue generated from all sales.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-4xl font-bold">$250,000</div>
+                  <div className="text-4xl font-bold">₹250,000</div>
                 </CardContent>
               </Card>
               <Card>
